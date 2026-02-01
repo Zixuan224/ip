@@ -1,17 +1,39 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.nio.file.*;
 
 public class SillyRat {
 
     private static final String LINE = "____________________________________________________________";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Scanner in = new Scanner(System.in);
         ArrayList<Task> tasks = new ArrayList<>();
 
+        List<String> lines = Storage.loadData();
+        for (String line : lines) {
+            if (line.trim().isEmpty()) continue;
+            try {
+                tasks.add(Task.toLoadTask(line));
+            } catch (Exception e) {
+                System.out.println(" Skipped corrupted line: " + line);
+            }
+        }
+
         printLine();
-        System.out.println(" Hello! I'm Little Silly Rat 🐀");
-        System.out.println(" What trouble can I create for you today?");
+        System.out.println(" Hello, Master! I'm Little Silly Rat 🐀");
+        if (tasks.isEmpty()) {
+            System.out.println(" You are so free, Master. Nothing to do eh.");
+        } else {
+            System.out.println(" Here's your tasks.");
+            for (int i = 0; i < tasks.size(); i++) {
+                System.out.println(" " + (i + 1) + ". " + tasks.get(i));
+            }
+        }
+        System.out.println(" What are you up to now?");
         printLine();
 
         while (true) {
@@ -31,9 +53,8 @@ public class SillyRat {
                 System.out.println(" " + e.getMessage());
                 printLine();
             } catch (Exception e) {
-                // Safety net (optional)
                 printLine();
-                System.out.println(" Oops... I tripped over my own tail. Try again?");
+                System.out.println(" Oops... I tripped over my own tail. Shall we try again?");
                 printLine();
             }
         }
@@ -41,9 +62,9 @@ public class SillyRat {
         in.close();
     }
 
-    private static void handleCommand(String input, ArrayList<Task> tasks) throws SillyRatException {
+    private static void handleCommand(String input, ArrayList<Task> tasks) throws SillyRatException, IOException {
         if (input.isEmpty()) {
-            throw new SillyRatException("Say something, human. My tiny ears heard nothing.");
+            throw new SillyRatException("Say something, Master. My tiny ears heard nothing.");
         }
 
         String[] parts = input.split(" ", 2);
@@ -57,30 +78,39 @@ public class SillyRat {
 
             case "todo":
                 doTodo(rest, tasks);
+                saveToFile(tasks);
                 break;
 
             case "deadline":
                 doDeadline(rest, tasks);
+                saveToFile(tasks);
                 break;
 
             case "event":
                 doEvent(rest, tasks);
+                saveToFile(tasks);
                 break;
 
-            case "mark":
+            case "mark": {
                 doMark(rest, tasks, true);
+                saveToFile(tasks);
                 break;
+            }
 
-            case "unmark":
+            case "unmark": {
                 doMark(rest, tasks, false);
+                saveToFile(tasks);
                 break;
+            }
 
-            case "delete":
+            case "delete": {
                 doDelete(rest, tasks);
+                saveToFile(tasks);
                 break;
+            }
 
             default:
-                throw new SillyRatException("I don't know what that means 😵 Try: todo, deadline, event, list, mark, unmark, delete, bye");
+                throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: todo, deadline, event, list, mark, unmark, delete, bye");
         }
     }
 
@@ -192,17 +222,29 @@ public class SillyRat {
 
         Task t = tasks.get(idx);
         if (markDone) {
-            t.markDone();
-            printLine();
-            System.out.println(" Nice! I've marked this task as done:");
-            System.out.println("   " + t);
-            printLine();
+            if (t.isDone) {
+                printLine();
+                System.out.println(" Master... It's already marked done.");
+                printLine();
+            } else {
+                t.markDone();
+                printLine();
+                System.out.println(" Nice! I've marked this task as done:");
+                System.out.println("   " + t);
+                printLine();
+            }
         } else {
-            t.unmarkDone();
-            printLine();
-            System.out.println(" OK, I've marked this task as not done yet:");
-            System.out.println("   " + t);
-            printLine();
+            if (t.isDone) {
+                t.unmarkDone();
+                printLine();
+                System.out.println(" OK! I've marked this task as not done yet:");
+                System.out.println("   " + t);
+                printLine();
+            } else {
+                printLine();
+                System.out.println(" Wake up Master... It's unchecked already.");
+                printLine();
+            }
         }
     }
 
@@ -241,8 +283,40 @@ public class SillyRat {
         return n - 1; // convert to 0-based
     }
 
+    private static void saveToFile(ArrayList<Task> tasks) throws IOException {
+        List<String> lines = tasks.stream()
+                .map(Task::toSaveString)
+                .toList();
+        Storage.saveData(lines);
+    }
+
     private static void printLine() {
         System.out.println(LINE);
+    }
+}
+
+/* ===================== Storage Class ===================== */
+class Storage {
+    private static final Path FILE_PATH = Paths.get("data", "silly-rat.txt");
+
+    private static void ensureExists() throws IOException {
+        Path dir = FILE_PATH.getParent();
+        if (dir != null && Files.notExists(dir)) {
+            Files.createDirectories(dir);
+        }
+        if (Files.notExists(FILE_PATH)) {
+            Files.createFile(FILE_PATH);
+        }
+    }
+
+    public static List<String> loadData() throws IOException {
+        ensureExists();
+        return Files.readAllLines(FILE_PATH, StandardCharsets.UTF_8);
+    }
+
+    public static void saveData(List<String> lines) throws IOException {
+        ensureExists();
+        Files.write(FILE_PATH, lines, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }
 
@@ -271,6 +345,36 @@ class Task {
 
     protected String getTypeIcon() {
         return " "; // overridden by subclasses
+    }
+
+    public static Task toLoadTask(String line) {
+        String[] parts = line.split("\t");
+
+        String type = parts[0];
+        boolean done = parts[1].equals("1");
+
+        Task task;
+        switch (type) {
+            case "T":
+                task = new Todo(parts[2]);
+                break;
+            case "D":
+                task = new Deadline(parts[2], parts[3]);
+                break;
+            case "E":
+                task = new Event(parts[2], parts[3], parts[4]);
+                break;
+            default:
+                task = new Task(parts.length > 2 ? parts[2] : "");
+        }
+
+        if (done) { task.markDone(); }
+
+        return task;
+    }
+
+    public String toSaveString() {
+        return getTypeIcon() + "\t" + (isDone? "1" : "0") + "\t" + description;
     }
 
     @Override
@@ -304,6 +408,11 @@ class Deadline extends Task {
     }
 
     @Override
+    public String toSaveString() {
+        return "D\t" + (isDone? "1" : "0") + "\t" + description + "\t" + by;
+    }
+
+    @Override
     public String toString() {
         return "[" + getTypeIcon() + "][" + getStatusIcon() + "] " + description + " (by: " + by + ")";
     }
@@ -322,6 +431,11 @@ class Event extends Task {
     @Override
     protected String getTypeIcon() {
         return "E";
+    }
+
+    @Override
+    public String toSaveString() {
+        return "E\t" + (isDone? "1" : "0") + "\t" + description + "\t" + from + "\t" + to;
     }
 
     @Override
