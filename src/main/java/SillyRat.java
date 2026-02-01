@@ -1,5 +1,9 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.nio.file.*;
 
 public class SillyRat {
 
@@ -31,9 +35,8 @@ public class SillyRat {
                 System.out.println(" " + e.getMessage());
                 printLine();
             } catch (Exception e) {
-                // Safety net (optional)
                 printLine();
-                System.out.println(" Oops... I tripped over my own tail. Try again?");
+                System.out.println(" Oops... I tripped over my own tail. Shall we try again?");
                 printLine();
             }
         }
@@ -247,6 +250,29 @@ public class SillyRat {
 }
 
 /* ===================== Task Classes (Inheritance) ===================== */
+class Storage {
+    private static final Path FILE_PATH = Paths.get("data", "silly-rat.txt");
+
+    private static void ensureExists() throws IOException {
+        Path dir = FILE_PATH.getParent();
+        if (dir != null && Files.notExists(dir)) {
+            Files.createDirectories(dir);
+        }
+        if (Files.notExists(FILE_PATH)) {
+            Files.createFile(FILE_PATH);
+        }
+    }
+
+    public static List<String> loadData() throws IOException {
+        ensureExists();
+        return Files.readAllLines(FILE_PATH, StandardCharsets.UTF_8);
+    }
+
+    public static void saveData(List<String> lines) throws IOException {
+        ensureExists();
+        Files.write(FILE_PATH, lines, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+}
 
 class Task {
     protected String description;
