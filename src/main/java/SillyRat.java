@@ -16,11 +16,18 @@ import java.util.Scanner;
 public class SillyRat {
 
     private static Ui ui;
+    private static final Parser parser = new Parser();
 
     public static void main(String[] args) throws IOException {
         ui = new Ui();
         Storage storage = new Storage("data/silly-rat.txt");
-        TaskList tasks = new TaskList(storage.load());
+
+        TaskList tasks;
+        try {
+            tasks = new TaskList(storage.load());
+        } catch (IOException e) {
+            tasks = new TaskList();
+        }
 
         ui.showLine();
         System.out.println(" Hello, Master! I'm Little Silly Rat 🐀");
@@ -35,18 +42,11 @@ public class SillyRat {
         System.out.println(" What are you up to now?");
         ui.showLine();
 
-        while (true) {
+        boolean isExit = false;
+        while (!isExit) {
             String input = ui.readCommand();
-
-            if (input.equals("bye")) {
-                ui.showLine();
-                System.out.println(" See you! Please bring more food next time :)");
-                ui.showLine();
-                break;
-            }
-
             try {
-                handleCommand(input, tasks, storage);
+                isExit = handleCommand(input, tasks, storage);
             } catch (SillyRatException e) {
                 ui.showLine();
                 System.out.println(" " + e.getMessage());
@@ -61,50 +61,67 @@ public class SillyRat {
         ui.close();
     }
 
-    private static void handleCommand(String input, TaskList tasks, Storage storage)
+    private static boolean handleCommand(String input, TaskList tasks, Storage storage)
             throws SillyRatException, IOException {
-        if (input.isEmpty()) {
-            throw new SillyRatException("Say something, Master. My tiny ears heard nothing.");
-        }
 
-        String[] parts = input.split(" ", 2);
-        String command = parts[0];
-        String rest = (parts.length > 1) ? parts[1].trim() : "";
+        ParsedCommand parsed = parser.parse(input);
+        String command = parsed.getCommandWord();
 
         switch (command) {
             case "list":
                 doList(tasks);
-                break;
+                return false;
 
-            case "todo":
-                doTodo(rest, tasks);
-                storage.save(tasks);
-                break;
+            case "bye":
+                ui.showLine();
+                System.out.println(" See you! Please bring more food next time :)");
+                ui.showLine();
+                return true;
 
-            case "deadline":
-                doDeadline(rest, tasks);
+            case "todo": {
+                TodoArgs args = (TodoArgs) parsed.getArgs();
+                doTodo(args, tasks);
                 storage.save(tasks);
-                break;
+                return false;
+            }
 
-            case "event":
-                doEvent(rest, tasks);
+            case "deadline": {
+                DeadlineArgs args = (DeadlineArgs) parsed.getArgs();
+                doDeadline(args, tasks);
                 storage.save(tasks);
-                break;
+                return false;
+            }
 
-            case "mark":
-                doMark(rest, tasks, true);
+            case "event": {
+                EventArgs args = (EventArgs) parsed.getArgs();
+                doEvent(args, tasks);
                 storage.save(tasks);
-                break;
+                return false;
+            }
 
-            case "unmark":
-                doMark(rest, tasks, false);
+            case "mark": {
+                IndexArgs args = (IndexArgs) parsed.getArgs();
+                int idx = toValidIndex(args.getTaskNumber(), tasks.size());
+                doMark(idx, tasks, true);
                 storage.save(tasks);
-                break;
+                return false;
+            }
 
-            case "delete":
-                doDelete(rest, tasks);
+            case "unmark": {
+                IndexArgs args = (IndexArgs) parsed.getArgs();
+                int idx = toValidIndex(args.getTaskNumber(), tasks.size());
+                doMark(idx, tasks, false);
                 storage.save(tasks);
-                break;
+                return false;
+            }
+
+            case "delete": {
+                IndexArgs args = (IndexArgs) parsed.getArgs();
+                int idx = toValidIndex(args.getTaskNumber(), tasks.size());
+                doDelete(idx, tasks);
+                storage.save(tasks);
+                return false;
+            }
 
             default:
                 throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
@@ -127,12 +144,8 @@ public class SillyRat {
         ui.showLine();
     }
 
-    private static void doTodo(String rest, TaskList tasks) throws SillyRatException {
-        if (rest.isEmpty()) {
-            throw new SillyRatException("Todo needs a description. Example: todo borrow cheese");
-        }
-
-        Task t = new Todo(rest);
+    private static void doTodo(TodoArgs args, TaskList tasks) {
+        Task t = new Todo(args.getDescription());
         tasks.add(t);
 
         ui.showLine();
@@ -142,35 +155,15 @@ public class SillyRat {
         ui.showLine();
     }
 
-    private static void doDeadline(String rest, TaskList tasks) throws SillyRatException {
-        if (rest.isEmpty()) {
-            throw new SillyRatException("Deadline needs details. Example: deadline submit report /by Sunday");
-        }
-
-        String[] split = rest.split(" /by ", 2);
-        if (split.length < 2) {
-            throw new SillyRatException("Deadline format: deadline <task> /by <when>");
-        }
-
-        String desc = split[0].trim();
-        String byRaw = split[1].trim();
-
-        if (desc.isEmpty()) {
-            throw new SillyRatException(
-                    "Deadline description cannot be empty. Example: deadline return book /by Sunday");
-        }
-        if (byRaw.isEmpty()) {
-            throw new SillyRatException("Deadline time cannot be empty. Example: deadline return book /by Sunday");
-        }
-
+    private static void doDeadline(DeadlineArgs args, TaskList tasks) throws SillyRatException {
         LocalDateTime by;
         try {
-            by = DateTimeUtil.parseUserDateTime(byRaw);
+            by = DateTimeUtil.parseUserDateTime(args.getByRaw());
         } catch (IllegalArgumentException e) {
             throw new SillyRatException(e.getMessage());
         }
 
-        Task t = new Deadline(desc, by);
+        Task t = new Deadline(args.getDescription(), by);
         tasks.add(t);
 
         ui.showLine();
@@ -180,50 +173,21 @@ public class SillyRat {
         ui.showLine();
     }
 
-    private static void doEvent(String rest, TaskList tasks) throws SillyRatException {
-        if (rest.isEmpty()) {
-            throw new SillyRatException("Event needs details. Example: event meeting /from Mon 2pm /to 4pm");
-        }
-
-        String[] fromSplit = rest.split(" /from ", 2);
-        if (fromSplit.length < 2) {
-            throw new SillyRatException("Event format: event <task> /from <start> /to <end>");
-        }
-
-        String desc = fromSplit[0].trim();
-        String afterFrom = fromSplit[1];
-
-        String[] toSplit = afterFrom.split(" /to ", 2);
-        if (toSplit.length < 2) {
-            throw new SillyRatException("Event format: event <task> /from <start> /to <end>");
-        }
-
-        String fromRaw = toSplit[0].trim();
-        String toRaw = toSplit[1].trim();
-
-        if (desc.isEmpty()) {
-            throw new SillyRatException("Event description cannot be empty.");
-        }
-        if (fromRaw.isEmpty()) {
-            throw new SillyRatException("Event start time cannot be empty.");
-        }
-        if (toRaw.isEmpty()) {
-            throw new SillyRatException("Event end time cannot be empty.");
-        }
-
+    private static void doEvent(EventArgs args, TaskList tasks) throws SillyRatException {
         LocalDateTime from;
         LocalDateTime to;
         try {
-            from = DateTimeUtil.parseUserDateTime(fromRaw);
-            to = DateTimeUtil.parseUserDateTime(toRaw);
+            from = DateTimeUtil.parseUserDateTime(args.getFromRaw());
+            to = DateTimeUtil.parseUserDateTime(args.getToRaw());
         } catch (IllegalArgumentException e) {
             throw new SillyRatException(e.getMessage());
         }
+
         if (to.isBefore(from)) {
             throw new SillyRatException("Event end must not be earlier than start.");
         }
 
-        Task t = new Event(desc, from, to);
+        Task t = new Event(args.getDescription(), from, to);
         tasks.add(t);
 
         ui.showLine();
@@ -233,39 +197,39 @@ public class SillyRat {
         ui.showLine();
     }
 
-    private static void doMark(String rest, TaskList tasks, boolean markDone) throws SillyRatException {
-        int idx = parseIndex(rest, tasks.size());
-
+    private static void doMark(int idx, TaskList tasks, boolean markDone) {
         Task t = tasks.get(idx);
+
         if (markDone) {
             if (t.isDone) {
                 ui.showLine();
                 System.out.println(" Master... It's already marked done.");
                 ui.showLine();
-            } else {
-                t.markDone();
-                ui.showLine();
-                System.out.println(" Nice! I've marked this task as done:");
-                System.out.println("   " + t);
-                ui.showLine();
+                return;
             }
-        } else {
-            if (t.isDone) {
-                t.unmarkDone();
-                ui.showLine();
-                System.out.println(" OK! I've marked this task as not done yet:");
-                System.out.println("   " + t);
-                ui.showLine();
-            } else {
-                ui.showLine();
-                System.out.println(" Wake up Master... It's unchecked already.");
-                ui.showLine();
-            }
+            t.markDone();
+            ui.showLine();
+            System.out.println(" Nice! I've marked this task as done:");
+            System.out.println("   " + t);
+            ui.showLine();
+            return;
         }
+
+        if (!t.isDone) {
+            ui.showLine();
+            System.out.println(" Wake up Master... It's unchecked already.");
+            ui.showLine();
+            return;
+        }
+
+        t.unmarkDone();
+        ui.showLine();
+        System.out.println(" OK! I've marked this task as not done yet:");
+        System.out.println("   " + t);
+        ui.showLine();
     }
 
-    private static void doDelete(String rest, TaskList tasks) throws SillyRatException {
-        int idx = parseIndex(rest, tasks.size());
+    private static void doDelete(int idx, TaskList tasks) {
         Task removed = tasks.remove(idx);
 
         ui.showLine();
@@ -275,26 +239,14 @@ public class SillyRat {
         ui.showLine();
     }
 
-    private static int parseIndex(String rest, int size) throws SillyRatException {
-        if (rest == null || rest.trim().isEmpty()) {
-            throw new SillyRatException("Please provide a task number. Example: mark 2");
-        }
+    private static int toValidIndex(int taskNumber, int size) throws SillyRatException {
         if (size == 0) {
             throw new SillyRatException("Your list is empty. Nothing to do here.");
         }
-
-        int n;
-        try {
-            n = Integer.parseInt(rest.trim());
-        } catch (NumberFormatException e) {
-            throw new SillyRatException("Task number must be a number. Example: delete 3");
-        }
-
-        if (n < 1 || n > size) {
+        if (taskNumber < 1 || taskNumber > size) {
             throw new SillyRatException("Task number out of range. Use 1 to " + size + ".");
         }
-
-        return n - 1;
+        return taskNumber - 1;
     }
 }
 
@@ -324,11 +276,7 @@ class Storage {
             if (line.trim().isEmpty()) {
                 continue;
             }
-            try {
-                tasks.add(Task.toLoadTask(line));
-            } catch (Exception e) {
-                System.out.println(" Skipped corrupted line: " + line);
-            }
+            tasks.add(Task.toLoadTask(line));
         }
 
         return tasks;
@@ -340,6 +288,42 @@ class Storage {
                 .map(Task::toSaveString)
                 .toList();
         Files.write(filePath, lines, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+}
+
+class TaskList {
+    private final ArrayList<Task> tasks;
+
+    public TaskList() {
+        tasks = new ArrayList<>();
+    }
+
+    public TaskList(List<Task> initialTasks) {
+        tasks = new ArrayList<>(initialTasks);
+    }
+
+    public void add(Task task) {
+        tasks.add(task);
+    }
+
+    public Task remove(int index) {
+        return tasks.remove(index);
+    }
+
+    public Task get(int index) {
+        return tasks.get(index);
+    }
+
+    public int size() {
+        return tasks.size();
+    }
+
+    public boolean isEmpty() {
+        return tasks.isEmpty();
+    }
+
+    public List<Task> asList() {
+        return tasks;
     }
 }
 
@@ -389,6 +373,7 @@ class Task {
                 break;
             default:
                 task = new Task(parts.length > 2 ? parts[2] : "");
+                break;
         }
 
         if (done) {
@@ -582,38 +567,221 @@ class Ui {
     }
 }
 
-class TaskList {
-    private final ArrayList<Task> tasks;
+class ParsedCommand {
+    private final String commandWord;
+    private final Object args;
 
-    public TaskList() {
-        tasks = new ArrayList<>();
+    public ParsedCommand(String commandWord, Object args) {
+        this.commandWord = commandWord;
+        this.args = args;
     }
 
-    public TaskList(List<Task> initialTasks) {
-        tasks = new ArrayList<>(initialTasks);
+    public String getCommandWord() {
+        return commandWord;
     }
 
-    public void add(Task task) {
-        tasks.add(task);
+    public Object getArgs() {
+        return args;
+    }
+}
+
+class Parser {
+
+    public ParsedCommand parse(String input) throws SillyRatException {
+        if (input == null || input.trim().isEmpty()) {
+            throw new SillyRatException("Say something, Master. My tiny ears heard nothing.");
+        }
+
+        String trimmed = input.trim();
+        String[] parts = trimmed.split(" ", 2);
+        String commandWord = parts[0];
+        String rest = (parts.length > 1) ? parts[1].trim() : "";
+
+        switch (commandWord) {
+            case "list":
+                requireNoArgs(commandWord, rest);
+                return new ParsedCommand(commandWord, new NoArgs());
+
+            case "bye":
+                requireNoArgs(commandWord, rest);
+                return new ParsedCommand(commandWord, new NoArgs());
+
+            case "todo":
+                return new ParsedCommand(commandWord, parseTodoArgs(rest));
+
+            case "deadline":
+                return new ParsedCommand(commandWord, parseDeadlineArgs(rest));
+
+            case "event":
+                return new ParsedCommand(commandWord, parseEventArgs(rest));
+
+            case "mark":
+            case "unmark":
+            case "delete":
+                return new ParsedCommand(commandWord, parseIndexArgs(commandWord, rest));
+
+            default:
+                throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
+                        + "todo, deadline, event, list, mark, unmark, delete, bye");
+        }
     }
 
-    public Task remove(int index) {
-        return tasks.remove(index);
+    private void requireNoArgs(String commandWord, String rest) throws SillyRatException {
+        if (rest != null && !rest.isBlank()) {
+            throw new SillyRatException(commandWord + " does not take any extra words.");
+        }
     }
 
-    public Task get(int index) {
-        return tasks.get(index);
+    private TodoArgs parseTodoArgs(String rest) throws SillyRatException {
+        if (rest.isEmpty()) {
+            throw new SillyRatException("Todo needs a description. Example: todo borrow cheese");
+        }
+        return new TodoArgs(rest);
     }
 
-    public int size() {
-        return tasks.size();
+    private DeadlineArgs parseDeadlineArgs(String rest) throws SillyRatException {
+        if (rest.isEmpty()) {
+            throw new SillyRatException("Deadline needs details. Example: deadline submit report /by Sunday");
+        }
+
+        String[] split = rest.split(" /by ", 2);
+        if (split.length < 2) {
+            throw new SillyRatException("Deadline format: deadline <task> /by <when>");
+        }
+
+        String desc = split[0].trim();
+        String byRaw = split[1].trim();
+
+        if (desc.isEmpty()) {
+            throw new SillyRatException(
+                    "Deadline description cannot be empty. Example: deadline return book /by Sunday");
+        }
+        if (byRaw.isEmpty()) {
+            throw new SillyRatException("Deadline time cannot be empty. Example: deadline return book /by Sunday");
+        }
+
+        return new DeadlineArgs(desc, byRaw);
     }
 
-    public boolean isEmpty() {
-        return tasks.isEmpty();
+    private EventArgs parseEventArgs(String rest) throws SillyRatException {
+        if (rest.isEmpty()) {
+            throw new SillyRatException("Event needs details. Example: event meeting /from Mon 2pm /to 4pm");
+        }
+
+        String[] fromSplit = rest.split(" /from ", 2);
+        if (fromSplit.length < 2) {
+            throw new SillyRatException("Event format: event <task> /from <start> /to <end>");
+        }
+
+        String desc = fromSplit[0].trim();
+        String afterFrom = fromSplit[1];
+
+        String[] toSplit = afterFrom.split(" /to ", 2);
+        if (toSplit.length < 2) {
+            throw new SillyRatException("Event format: event <task> /from <start> /to <end>");
+        }
+
+        String fromRaw = toSplit[0].trim();
+        String toRaw = toSplit[1].trim();
+
+        if (desc.isEmpty()) {
+            throw new SillyRatException("Event description cannot be empty.");
+        }
+        if (fromRaw.isEmpty()) {
+            throw new SillyRatException("Event start time cannot be empty.");
+        }
+        if (toRaw.isEmpty()) {
+            throw new SillyRatException("Event end time cannot be empty.");
+        }
+
+        return new EventArgs(desc, fromRaw, toRaw);
     }
 
-    public List<Task> asList() {
-        return tasks;
+    private IndexArgs parseIndexArgs(String commandWord, String rest) throws SillyRatException {
+        if (rest == null || rest.trim().isEmpty()) {
+            throw new SillyRatException("Please provide a task number. Example: " + commandWord + " 2");
+        }
+
+        int n;
+        try {
+            n = Integer.parseInt(rest.trim());
+        } catch (NumberFormatException e) {
+            throw new SillyRatException("Task number must be a number. Example: " + commandWord + " 3");
+        }
+
+        if (n < 1) {
+            throw new SillyRatException("Task number must be at least 1.");
+        }
+
+        return new IndexArgs(n);
+    }
+}
+
+class NoArgs {
+}
+
+class TodoArgs {
+    private final String description;
+
+    public TodoArgs(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+}
+
+class DeadlineArgs {
+    private final String description;
+    private final String byRaw;
+
+    public DeadlineArgs(String description, String byRaw) {
+        this.description = description;
+        this.byRaw = byRaw;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getByRaw() {
+        return byRaw;
+    }
+}
+
+class EventArgs {
+    private final String description;
+    private final String fromRaw;
+    private final String toRaw;
+
+    public EventArgs(String description, String fromRaw, String toRaw) {
+        this.description = description;
+        this.fromRaw = fromRaw;
+        this.toRaw = toRaw;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getFromRaw() {
+        return fromRaw;
+    }
+
+    public String getToRaw() {
+        return toRaw;
+    }
+}
+
+class IndexArgs {
+    private final int taskNumber;
+
+    public IndexArgs(int taskNumber) {
+        this.taskNumber = taskNumber;
+    }
+
+    public int getTaskNumber() {
+        return taskNumber;
     }
 }
