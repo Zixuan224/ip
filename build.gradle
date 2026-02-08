@@ -34,8 +34,16 @@ application {
 shadowJar {
     archiveBaseName = "sillyrat"
     archiveClassifier = null
+    archiveVersion = ""
+    manifest {
+        attributes 'Main-Class': application.mainClass.get()
+    }
 }
 
-run{
+tasks.build {
+    dependsOn tasks.shadowJar
+}
+
+run {
     standardInput = System.in
 }
