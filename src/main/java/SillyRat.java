@@ -1,5 +1,9 @@
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -8,7 +12,6 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.nio.file.*;
 
 public class SillyRat {
 
@@ -16,20 +19,8 @@ public class SillyRat {
 
     public static void main(String[] args) throws IOException {
         ui = new Ui();
-
-        TaskList tasks = new TaskList();
-
-        List<String> lines = Storage.loadData();
-        for (String line : lines) {
-            if (line.trim().isEmpty()) {
-                continue;
-            }
-            try {
-                tasks.add(Task.toLoadTask(line));
-            } catch (Exception e) {
-                System.out.println(" Skipped corrupted line: " + line);
-            }
-        }
+        Storage storage = new Storage("data/silly-rat.txt");
+        TaskList tasks = new TaskList(storage.load());
 
         ui.showLine();
         System.out.println(" Hello, Master! I'm Little Silly Rat 🐀");
@@ -55,7 +46,7 @@ public class SillyRat {
             }
 
             try {
-                handleCommand(input, tasks);
+                handleCommand(input, tasks, storage);
             } catch (SillyRatException e) {
                 ui.showLine();
                 System.out.println(" " + e.getMessage());
@@ -70,7 +61,8 @@ public class SillyRat {
         ui.close();
     }
 
-    private static void handleCommand(String input, TaskList tasks) throws SillyRatException, IOException {
+    private static void handleCommand(String input, TaskList tasks, Storage storage)
+            throws SillyRatException, IOException {
         if (input.isEmpty()) {
             throw new SillyRatException("Say something, Master. My tiny ears heard nothing.");
         }
@@ -86,36 +78,33 @@ public class SillyRat {
 
             case "todo":
                 doTodo(rest, tasks);
-                saveToFile(tasks);
+                storage.save(tasks);
                 break;
 
             case "deadline":
                 doDeadline(rest, tasks);
-                saveToFile(tasks);
+                storage.save(tasks);
                 break;
 
             case "event":
                 doEvent(rest, tasks);
-                saveToFile(tasks);
+                storage.save(tasks);
                 break;
 
-            case "mark": {
+            case "mark":
                 doMark(rest, tasks, true);
-                saveToFile(tasks);
+                storage.save(tasks);
                 break;
-            }
 
-            case "unmark": {
+            case "unmark":
                 doMark(rest, tasks, false);
-                saveToFile(tasks);
+                storage.save(tasks);
                 break;
-            }
 
-            case "delete": {
+            case "delete":
                 doDelete(rest, tasks);
-                saveToFile(tasks);
+                storage.save(tasks);
                 break;
-            }
 
             default:
                 throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
@@ -180,8 +169,8 @@ public class SillyRat {
         } catch (IllegalArgumentException e) {
             throw new SillyRatException(e.getMessage());
         }
-        Task t = new Deadline(desc, by);
 
+        Task t = new Deadline(desc, by);
         tasks.add(t);
 
         ui.showLine();
@@ -307,41 +296,52 @@ public class SillyRat {
 
         return n - 1;
     }
-
-    private static void saveToFile(TaskList tasks) throws IOException {
-        List<String> lines = tasks.asList().stream()
-                .map(Task::toSaveString)
-                .toList();
-        Storage.saveData(lines);
-    }
 }
 
-/* ===================== Storage Class ===================== */
 class Storage {
-    private static final Path FILE_PATH = Paths.get("data", "silly-rat.txt");
+    private final Path filePath;
 
-    private static void ensureExists() throws IOException {
-        Path dir = FILE_PATH.getParent();
+    public Storage(String filePath) {
+        this.filePath = Paths.get(filePath);
+    }
+
+    private void ensureExists() throws IOException {
+        Path dir = this.filePath.getParent();
         if (dir != null && Files.notExists(dir)) {
             Files.createDirectories(dir);
         }
-        if (Files.notExists(FILE_PATH)) {
-            Files.createFile(FILE_PATH);
+        if (Files.notExists(this.filePath)) {
+            Files.createFile(this.filePath);
         }
     }
 
-    public static List<String> loadData() throws IOException {
+    public List<Task> load() throws IOException {
         ensureExists();
-        return Files.readAllLines(FILE_PATH, StandardCharsets.UTF_8);
+        List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
+        List<Task> tasks = new ArrayList<>();
+
+        for (String line : lines) {
+            if (line.trim().isEmpty()) {
+                continue;
+            }
+            try {
+                tasks.add(Task.toLoadTask(line));
+            } catch (Exception e) {
+                System.out.println(" Skipped corrupted line: " + line);
+            }
+        }
+
+        return tasks;
     }
 
-    public static void saveData(List<String> lines) throws IOException {
+    public void save(TaskList tasks) throws IOException {
         ensureExists();
-        Files.write(FILE_PATH, lines, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
+        List<String> lines = tasks.asList().stream()
+                .map(Task::toSaveString)
+                .toList();
+        Files.write(filePath, lines, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }
-
-/* ===================== Task Classes (Inheritance) ===================== */
 
 class Task {
     protected String description;
@@ -365,7 +365,7 @@ class Task {
     }
 
     protected String getTypeIcon() {
-        return " "; // overridden by subclasses
+        return " ";
     }
 
     public static Task toLoadTask(String line) {
@@ -420,7 +420,7 @@ class Todo extends Task {
 }
 
 class Deadline extends Task {
-    private LocalDateTime by;
+    private final LocalDateTime by;
 
     public Deadline(String description, LocalDateTime by) {
         super(description);
@@ -450,8 +450,8 @@ class Deadline extends Task {
 }
 
 class Event extends Task {
-    private LocalDateTime from;
-    private LocalDateTime to;
+    private final LocalDateTime from;
+    private final LocalDateTime to;
 
     public Event(String description, LocalDateTime from, LocalDateTime to) {
         super(description);
@@ -487,15 +487,11 @@ class Event extends Task {
     }
 }
 
-/* ===================== Custom Exception ===================== */
-
 class SillyRatException extends Exception {
     public SillyRatException(String message) {
         super(message);
     }
 }
-
-/* ===================== DateTimeUtil Class ===================== */
 
 class DateTimeUtil {
     private static final DateTimeFormatter DISPLAY_DATE =
@@ -516,7 +512,8 @@ class DateTimeUtil {
             DateTimeFormatter.ofPattern("uuuu-MM-dd")
     };
 
-    private DateTimeUtil() {}
+    private DateTimeUtil() {
+    }
 
     public static LocalDateTime parseUserDateTime(String raw) {
         String s = raw.trim();
@@ -563,8 +560,6 @@ class DateTimeUtil {
     }
 }
 
-/* ===================== Ui Class ===================== */
-
 class Ui {
     private static final String LINE =
             "____________________________________________________________";
@@ -586,8 +581,6 @@ class Ui {
         scanner.close();
     }
 }
-
-/* ===================== TaskList Class ===================== */
 
 class TaskList {
     private final ArrayList<Task> tasks;
