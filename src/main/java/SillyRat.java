@@ -17,7 +17,7 @@ public class SillyRat {
     public static void main(String[] args) throws IOException {
         ui = new Ui();
 
-        ArrayList<Task> tasks = new ArrayList<>();
+        TaskList tasks = new TaskList();
 
         List<String> lines = Storage.loadData();
         for (String line : lines) {
@@ -70,7 +70,7 @@ public class SillyRat {
         ui.close();
     }
 
-    private static void handleCommand(String input, ArrayList<Task> tasks) throws SillyRatException, IOException {
+    private static void handleCommand(String input, TaskList tasks) throws SillyRatException, IOException {
         if (input.isEmpty()) {
             throw new SillyRatException("Say something, Master. My tiny ears heard nothing.");
         }
@@ -123,7 +123,7 @@ public class SillyRat {
         }
     }
 
-    private static void doList(ArrayList<Task> tasks) {
+    private static void doList(TaskList tasks) {
         ui.showLine();
         if (tasks.isEmpty()) {
             System.out.println(" Your list is empty. Feed me tasks with todo/deadline/event.");
@@ -138,7 +138,7 @@ public class SillyRat {
         ui.showLine();
     }
 
-    private static void doTodo(String rest, ArrayList<Task> tasks) throws SillyRatException {
+    private static void doTodo(String rest, TaskList tasks) throws SillyRatException {
         if (rest.isEmpty()) {
             throw new SillyRatException("Todo needs a description. Example: todo borrow cheese");
         }
@@ -153,7 +153,7 @@ public class SillyRat {
         ui.showLine();
     }
 
-    private static void doDeadline(String rest, ArrayList<Task> tasks) throws SillyRatException {
+    private static void doDeadline(String rest, TaskList tasks) throws SillyRatException {
         if (rest.isEmpty()) {
             throw new SillyRatException("Deadline needs details. Example: deadline submit report /by Sunday");
         }
@@ -191,7 +191,7 @@ public class SillyRat {
         ui.showLine();
     }
 
-    private static void doEvent(String rest, ArrayList<Task> tasks) throws SillyRatException {
+    private static void doEvent(String rest, TaskList tasks) throws SillyRatException {
         if (rest.isEmpty()) {
             throw new SillyRatException("Event needs details. Example: event meeting /from Mon 2pm /to 4pm");
         }
@@ -244,7 +244,7 @@ public class SillyRat {
         ui.showLine();
     }
 
-    private static void doMark(String rest, ArrayList<Task> tasks, boolean markDone) throws SillyRatException {
+    private static void doMark(String rest, TaskList tasks, boolean markDone) throws SillyRatException {
         int idx = parseIndex(rest, tasks.size());
 
         Task t = tasks.get(idx);
@@ -275,7 +275,7 @@ public class SillyRat {
         }
     }
 
-    private static void doDelete(String rest, ArrayList<Task> tasks) throws SillyRatException {
+    private static void doDelete(String rest, TaskList tasks) throws SillyRatException {
         int idx = parseIndex(rest, tasks.size());
         Task removed = tasks.remove(idx);
 
@@ -308,8 +308,8 @@ public class SillyRat {
         return n - 1;
     }
 
-    private static void saveToFile(ArrayList<Task> tasks) throws IOException {
-        List<String> lines = tasks.stream()
+    private static void saveToFile(TaskList tasks) throws IOException {
+        List<String> lines = tasks.asList().stream()
                 .map(Task::toSaveString)
                 .toList();
         Storage.saveData(lines);
@@ -563,6 +563,8 @@ class DateTimeUtil {
     }
 }
 
+/* ===================== Ui Class ===================== */
+
 class Ui {
     private static final String LINE =
             "____________________________________________________________";
@@ -582,5 +584,43 @@ class Ui {
 
     public void close() {
         scanner.close();
+    }
+}
+
+/* ===================== TaskList Class ===================== */
+
+class TaskList {
+    private final ArrayList<Task> tasks;
+
+    public TaskList() {
+        tasks = new ArrayList<>();
+    }
+
+    public TaskList(List<Task> initialTasks) {
+        tasks = new ArrayList<>(initialTasks);
+    }
+
+    public void add(Task task) {
+        tasks.add(task);
+    }
+
+    public Task remove(int index) {
+        return tasks.remove(index);
+    }
+
+    public Task get(int index) {
+        return tasks.get(index);
+    }
+
+    public int size() {
+        return tasks.size();
+    }
+
+    public boolean isEmpty() {
+        return tasks.isEmpty();
+    }
+
+    public List<Task> asList() {
+        return tasks;
     }
 }
