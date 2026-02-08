@@ -1,26 +1,29 @@
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.nio.file.*;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 public class SillyRat {
 
-    private static final String LINE = "____________________________________________________________";
+    private static Ui ui;
 
     public static void main(String[] args) throws IOException {
-        Scanner in = new Scanner(System.in);
+        ui = new Ui();
+
         ArrayList<Task> tasks = new ArrayList<>();
 
         List<String> lines = Storage.loadData();
         for (String line : lines) {
-            if (line.trim().isEmpty()) continue;
+            if (line.trim().isEmpty()) {
+                continue;
+            }
             try {
                 tasks.add(Task.toLoadTask(line));
             } catch (Exception e) {
@@ -28,7 +31,7 @@ public class SillyRat {
             }
         }
 
-        printLine();
+        ui.showLine();
         System.out.println(" Hello, Master! I'm Little Silly Rat 🐀");
         if (tasks.isEmpty()) {
             System.out.println(" You are so free, Master. Nothing to do eh.");
@@ -39,32 +42,32 @@ public class SillyRat {
             }
         }
         System.out.println(" What are you up to now?");
-        printLine();
+        ui.showLine();
 
         while (true) {
-            String input = in.nextLine().trim();
+            String input = ui.readCommand();
 
             if (input.equals("bye")) {
-                printLine();
+                ui.showLine();
                 System.out.println(" See you! Please bring more food next time :)");
-                printLine();
+                ui.showLine();
                 break;
             }
 
             try {
                 handleCommand(input, tasks);
             } catch (SillyRatException e) {
-                printLine();
+                ui.showLine();
                 System.out.println(" " + e.getMessage());
-                printLine();
+                ui.showLine();
             } catch (Exception e) {
-                printLine();
+                ui.showLine();
                 System.out.println(" Oops... I tripped over my own tail. Shall we try again?");
-                printLine();
+                ui.showLine();
             }
         }
 
-        in.close();
+        ui.close();
     }
 
     private static void handleCommand(String input, ArrayList<Task> tasks) throws SillyRatException, IOException {
@@ -115,17 +118,16 @@ public class SillyRat {
             }
 
             default:
-                throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: todo, deadline, event, list, mark, unmark, delete, bye");
+                throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
+                        + "todo, deadline, event, list, mark, unmark, delete, bye");
         }
     }
 
-    // ---------------- Commands ----------------
-
     private static void doList(ArrayList<Task> tasks) {
-        printLine();
+        ui.showLine();
         if (tasks.isEmpty()) {
             System.out.println(" Your list is empty. Feed me tasks with todo/deadline/event.");
-            printLine();
+            ui.showLine();
             return;
         }
 
@@ -133,7 +135,7 @@ public class SillyRat {
         for (int i = 0; i < tasks.size(); i++) {
             System.out.println(" " + (i + 1) + "." + tasks.get(i));
         }
-        printLine();
+        ui.showLine();
     }
 
     private static void doTodo(String rest, ArrayList<Task> tasks) throws SillyRatException {
@@ -144,11 +146,11 @@ public class SillyRat {
         Task t = new Todo(rest);
         tasks.add(t);
 
-        printLine();
+        ui.showLine();
         System.out.println(" Got it. I've added this task:");
         System.out.println("   " + t);
         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-        printLine();
+        ui.showLine();
     }
 
     private static void doDeadline(String rest, ArrayList<Task> tasks) throws SillyRatException {
@@ -165,7 +167,8 @@ public class SillyRat {
         String byRaw = split[1].trim();
 
         if (desc.isEmpty()) {
-            throw new SillyRatException("Deadline description cannot be empty. Example: deadline return book /by Sunday");
+            throw new SillyRatException(
+                    "Deadline description cannot be empty. Example: deadline return book /by Sunday");
         }
         if (byRaw.isEmpty()) {
             throw new SillyRatException("Deadline time cannot be empty. Example: deadline return book /by Sunday");
@@ -181,11 +184,11 @@ public class SillyRat {
 
         tasks.add(t);
 
-        printLine();
+        ui.showLine();
         System.out.println(" Got it. I've added this task:");
         System.out.println("   " + t);
         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-        printLine();
+        ui.showLine();
     }
 
     private static void doEvent(String rest, ArrayList<Task> tasks) throws SillyRatException {
@@ -234,11 +237,11 @@ public class SillyRat {
         Task t = new Event(desc, from, to);
         tasks.add(t);
 
-        printLine();
+        ui.showLine();
         System.out.println(" Got it. I've added this task:");
         System.out.println("   " + t);
         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-        printLine();
+        ui.showLine();
     }
 
     private static void doMark(String rest, ArrayList<Task> tasks, boolean markDone) throws SillyRatException {
@@ -247,27 +250,27 @@ public class SillyRat {
         Task t = tasks.get(idx);
         if (markDone) {
             if (t.isDone) {
-                printLine();
+                ui.showLine();
                 System.out.println(" Master... It's already marked done.");
-                printLine();
+                ui.showLine();
             } else {
                 t.markDone();
-                printLine();
+                ui.showLine();
                 System.out.println(" Nice! I've marked this task as done:");
                 System.out.println("   " + t);
-                printLine();
+                ui.showLine();
             }
         } else {
             if (t.isDone) {
                 t.unmarkDone();
-                printLine();
+                ui.showLine();
                 System.out.println(" OK! I've marked this task as not done yet:");
                 System.out.println("   " + t);
-                printLine();
+                ui.showLine();
             } else {
-                printLine();
+                ui.showLine();
                 System.out.println(" Wake up Master... It's unchecked already.");
-                printLine();
+                ui.showLine();
             }
         }
     }
@@ -276,14 +279,12 @@ public class SillyRat {
         int idx = parseIndex(rest, tasks.size());
         Task removed = tasks.remove(idx);
 
-        printLine();
+        ui.showLine();
         System.out.println(" Noted. I've removed this task:");
         System.out.println("   " + removed);
         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-        printLine();
+        ui.showLine();
     }
-
-    // ---------------- Helpers ----------------
 
     private static int parseIndex(String rest, int size) throws SillyRatException {
         if (rest == null || rest.trim().isEmpty()) {
@@ -304,7 +305,7 @@ public class SillyRat {
             throw new SillyRatException("Task number out of range. Use 1 to " + size + ".");
         }
 
-        return n - 1; // convert to 0-based
+        return n - 1;
     }
 
     private static void saveToFile(ArrayList<Task> tasks) throws IOException {
@@ -312,10 +313,6 @@ public class SillyRat {
                 .map(Task::toSaveString)
                 .toList();
         Storage.saveData(lines);
-    }
-
-    private static void printLine() {
-        System.out.println(LINE);
     }
 }
 
@@ -394,7 +391,9 @@ class Task {
                 task = new Task(parts.length > 2 ? parts[2] : "");
         }
 
-        if (done) { task.markDone(); }
+        if (done) {
+            task.markDone();
+        }
 
         return task;
     }
@@ -485,7 +484,6 @@ class Event extends Task {
         return "[" + getTypeIcon() + "][" + getStatusIcon() + "] " + description
                 + " (from: " + DateTimeUtil.toDisplayString(from)
                 + " to: " + DateTimeUtil.toDisplayString(to) + ")";
-
     }
 }
 
@@ -509,13 +507,13 @@ class DateTimeUtil {
             DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private static final DateTimeFormatter[] USER_DATE_TIME_FORMATS = {
-            DateTimeFormatter.ofPattern("d/M/uuuu HHmm"),     // 2/12/2019 1800
-            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"),  // 2019-10-15 18:00
-            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm")    // 2019-10-15 1800
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm"),
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"),
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm")
     };
 
     private static final DateTimeFormatter[] USER_DATE_ONLY_FORMATS = {
-            DateTimeFormatter.ofPattern("uuuu-MM-dd")         // 2019-10-15
+            DateTimeFormatter.ofPattern("uuuu-MM-dd")
     };
 
     private DateTimeUtil() {}
@@ -562,5 +560,27 @@ class DateTimeUtil {
 
     public static LocalDateTime parseStorageDateTime(String raw) {
         return LocalDateTime.parse(raw.trim(), STORAGE);
+    }
+}
+
+class Ui {
+    private static final String LINE =
+            "____________________________________________________________";
+    private final Scanner scanner;
+
+    public Ui() {
+        scanner = new Scanner(System.in);
+    }
+
+    public void showLine() {
+        System.out.println(LINE);
+    }
+
+    public String readCommand() {
+        return scanner.nextLine().trim();
+    }
+
+    public void close() {
+        scanner.close();
     }
 }
