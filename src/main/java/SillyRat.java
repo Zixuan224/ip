@@ -167,7 +167,7 @@ public class SillyRat {
         if (desc.isEmpty()) {
             throw new SillyRatException("Deadline description cannot be empty. Example: deadline return book /by Sunday");
         }
-        if (if (byRaw.isEmpty()) {
+        if (byRaw.isEmpty()) {
             throw new SillyRatException("Deadline time cannot be empty. Example: deadline return book /by Sunday");
         }
 
@@ -212,10 +212,10 @@ public class SillyRat {
         if (desc.isEmpty()) {
             throw new SillyRatException("Event description cannot be empty.");
         }
-        if (from.isEmpty()) {
+        if (fromRaw.isEmpty()) {
             throw new SillyRatException("Event start time cannot be empty.");
         }
-        if (to.isEmpty()) {
+        if (toRaw.isEmpty()) {
             throw new SillyRatException("Event end time cannot be empty.");
         }
 
@@ -400,7 +400,7 @@ class Task {
     }
 
     public String toSaveString() {
-        return getTypeIcon() + "\t" + (isDone? "1" : "0") + "\t" + description;
+        return getTypeIcon() + "\t" + (isDone ? "1" : "0") + "\t" + description;
     }
 
     @Override
@@ -445,7 +445,8 @@ class Deadline extends Task {
 
     @Override
     public String toString() {
-        return "[" + getTypeIcon() + "][" + getStatusIcon() + "] " + description + " (by: " + by + ")";
+        return "[" + getTypeIcon() + "][" + getStatusIcon() + "] " + description
+                + " (by: " + DateTimeUtil.toDisplayString(by) + ")";
     }
 }
 
