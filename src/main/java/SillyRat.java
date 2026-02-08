@@ -1,9 +1,14 @@
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.nio.file.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class SillyRat {
 
@@ -157,16 +162,23 @@ public class SillyRat {
         }
 
         String desc = split[0].trim();
-        String by = split[1].trim();
+        String byRaw = split[1].trim();
 
         if (desc.isEmpty()) {
             throw new SillyRatException("Deadline description cannot be empty. Example: deadline return book /by Sunday");
         }
-        if (by.isEmpty()) {
+        if (if (byRaw.isEmpty()) {
             throw new SillyRatException("Deadline time cannot be empty. Example: deadline return book /by Sunday");
         }
 
+        LocalDateTime by;
+        try {
+            by = DateTimeUtil.parseUserDateTime(byRaw);
+        } catch (IllegalArgumentException e) {
+            throw new SillyRatException(e.getMessage());
+        }
         Task t = new Deadline(desc, by);
+
         tasks.add(t);
 
         printLine();
@@ -194,8 +206,8 @@ public class SillyRat {
             throw new SillyRatException("Event format: event <task> /from <start> /to <end>");
         }
 
-        String from = toSplit[0].trim();
-        String to = toSplit[1].trim();
+        String fromRaw = toSplit[0].trim();
+        String toRaw = toSplit[1].trim();
 
         if (desc.isEmpty()) {
             throw new SillyRatException("Event description cannot be empty.");
@@ -205,6 +217,18 @@ public class SillyRat {
         }
         if (to.isEmpty()) {
             throw new SillyRatException("Event end time cannot be empty.");
+        }
+
+        LocalDateTime from;
+        LocalDateTime to;
+        try {
+            from = DateTimeUtil.parseUserDateTime(fromRaw);
+            to = DateTimeUtil.parseUserDateTime(toRaw);
+        } catch (IllegalArgumentException e) {
+            throw new SillyRatException(e.getMessage());
+        }
+        if (to.isBefore(from)) {
+            throw new SillyRatException("Event end must not be earlier than start.");
         }
 
         Task t = new Event(desc, from, to);
@@ -359,10 +383,12 @@ class Task {
                 task = new Todo(parts[2]);
                 break;
             case "D":
-                task = new Deadline(parts[2], parts[3]);
+                task = new Deadline(parts[2], DateTimeUtil.parseStorageDateTime(parts[3]));
                 break;
             case "E":
-                task = new Event(parts[2], parts[3], parts[4]);
+                task = new Event(parts[2],
+                        DateTimeUtil.parseStorageDateTime(parts[3]),
+                        DateTimeUtil.parseStorageDateTime(parts[4]));
                 break;
             default:
                 task = new Task(parts.length > 2 ? parts[2] : "");
@@ -395,11 +421,15 @@ class Todo extends Task {
 }
 
 class Deadline extends Task {
-    private String by;
+    private LocalDateTime by;
 
-    public Deadline(String description, String by) {
+    public Deadline(String description, LocalDateTime by) {
         super(description);
         this.by = by;
+    }
+
+    public LocalDateTime getBy() {
+        return by;
     }
 
     @Override
@@ -409,7 +439,8 @@ class Deadline extends Task {
 
     @Override
     public String toSaveString() {
-        return "D\t" + (isDone? "1" : "0") + "\t" + description + "\t" + by;
+        return "D\t" + (isDone ? "1" : "0") + "\t" + description + "\t"
+                + DateTimeUtil.toStorageString(by);
     }
 
     @Override
@@ -419,13 +450,21 @@ class Deadline extends Task {
 }
 
 class Event extends Task {
-    private String from;
-    private String to;
+    private LocalDateTime from;
+    private LocalDateTime to;
 
-    public Event(String description, String from, String to) {
+    public Event(String description, LocalDateTime from, LocalDateTime to) {
         super(description);
         this.from = from;
         this.to = to;
+    }
+
+    public LocalDateTime getFrom() {
+        return from;
+    }
+
+    public LocalDateTime getTo() {
+        return to;
     }
 
     @Override
@@ -435,13 +474,17 @@ class Event extends Task {
 
     @Override
     public String toSaveString() {
-        return "E\t" + (isDone? "1" : "0") + "\t" + description + "\t" + from + "\t" + to;
+        return "E\t" + (isDone ? "1" : "0") + "\t" + description + "\t"
+                + DateTimeUtil.toStorageString(from) + "\t"
+                + DateTimeUtil.toStorageString(to);
     }
 
     @Override
     public String toString() {
         return "[" + getTypeIcon() + "][" + getStatusIcon() + "] " + description
-                + " (from: " + from + " to: " + to + ")";
+                + " (from: " + DateTimeUtil.toDisplayString(from)
+                + " to: " + DateTimeUtil.toDisplayString(to) + ")";
+
     }
 }
 
@@ -450,5 +493,73 @@ class Event extends Task {
 class SillyRatException extends Exception {
     public SillyRatException(String message) {
         super(message);
+    }
+}
+
+/* ===================== DateTimeUtil Class ===================== */
+
+class DateTimeUtil {
+    private static final DateTimeFormatter DISPLAY_DATE =
+            DateTimeFormatter.ofPattern("MMM dd uuuu");
+    private static final DateTimeFormatter DISPLAY_DATE_TIME =
+            DateTimeFormatter.ofPattern("MMM dd uuuu HH:mm");
+
+    private static final DateTimeFormatter STORAGE =
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+    private static final DateTimeFormatter[] USER_DATE_TIME_FORMATS = {
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm"),     // 2/12/2019 1800
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"),  // 2019-10-15 18:00
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm")    // 2019-10-15 1800
+    };
+
+    private static final DateTimeFormatter[] USER_DATE_ONLY_FORMATS = {
+            DateTimeFormatter.ofPattern("uuuu-MM-dd")         // 2019-10-15
+    };
+
+    private DateTimeUtil() {}
+
+    public static LocalDateTime parseUserDateTime(String raw) {
+        String s = raw.trim();
+
+        for (DateTimeFormatter f : USER_DATE_TIME_FORMATS) {
+            try {
+                return LocalDateTime.parse(s, f);
+            } catch (DateTimeParseException ignored) {
+                // try next formatter
+            }
+        }
+
+        for (DateTimeFormatter f : USER_DATE_ONLY_FORMATS) {
+            try {
+                LocalDate d = LocalDate.parse(s, f);
+                return d.atStartOfDay();
+            } catch (DateTimeParseException ignored) {
+                // try next formatter
+            }
+        }
+
+        throw new IllegalArgumentException(
+                "Invalid date/time format.\n"
+                        + "Accepted formats:\n"
+                        + "  - yyyy-MM-dd (e.g., 2019-10-15)\n"
+                        + "  - yyyy-MM-dd HH:mm (e.g., 2019-10-15 18:00)\n"
+                        + "  - d/M/yyyy HHmm (e.g., 2/12/2019 1800 means 2 Dec 2019 18:00)"
+        );
+    }
+
+    public static String toDisplayString(LocalDateTime dt) {
+        if (dt.toLocalTime().equals(LocalTime.MIDNIGHT)) {
+            return dt.toLocalDate().format(DISPLAY_DATE);
+        }
+        return dt.format(DISPLAY_DATE_TIME);
+    }
+
+    public static String toStorageString(LocalDateTime dt) {
+        return dt.format(STORAGE);
+    }
+
+    public static LocalDateTime parseStorageDateTime(String raw) {
+        return LocalDateTime.parse(raw.trim(), STORAGE);
     }
 }
