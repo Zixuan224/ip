@@ -2,8 +2,17 @@ package sillyrat.parser;
 
 import sillyrat.common.SillyRatException;
 
+/**
+ * Represent parser for user input
+ */
 public class Parser {
 
+    /**
+     * Parse user input and execute the corresponding command.
+     * @param input User input
+     * @return
+     * @throws SillyRatException Exceptions for invalid input
+     */
     public ParsedCommand parse(String input) throws SillyRatException {
         if (input == null || input.trim().isEmpty()) {
             throw new SillyRatException("Say something, Master. My tiny ears heard nothing.");

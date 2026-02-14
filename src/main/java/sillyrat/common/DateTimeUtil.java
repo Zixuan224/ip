@@ -6,6 +6,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Utility class for parsing and formatting date/time strings.
+ */
+
 public class DateTimeUtil {
     private static final DateTimeFormatter DISPLAY_DATE =
             DateTimeFormatter.ofPattern("MMM dd uuuu");
@@ -28,6 +32,13 @@ public class DateTimeUtil {
     private DateTimeUtil() {
     }
 
+    /**
+     * Parses a user-provided date/time string into a LocalDateTime object.
+     *
+     * @param raw The date/time string to parse.
+     * @return The parsed LocalDateTime object.
+     * @throws IllegalArgumentException If the input string does not match any supported format.
+     */
     public static LocalDateTime parseUserDateTime(String raw) {
         String s = raw.trim();
 
@@ -55,6 +66,11 @@ public class DateTimeUtil {
         );
     }
 
+    /**
+     * Formats a LocalDateTime object into a human-readable string.
+     * @param dt The LocalDateTime object to format.
+     * @return The formatted string representing the date and time.
+     */
     public static String toDisplayString(LocalDateTime dt) {
         if (dt.toLocalTime().equals(LocalTime.MIDNIGHT)) {
             return dt.toLocalDate().format(DISPLAY_DATE);
@@ -62,10 +78,20 @@ public class DateTimeUtil {
         return dt.format(DISPLAY_DATE_TIME);
     }
 
+    /**
+     * Formats a LocalDateTime object into a storage-friendly string.
+     * @param dt The LocalDateTime object to format.
+     * @return The formatted string suitable for storage.
+     */
     public static String toStorageString(LocalDateTime dt) {
         return dt.format(STORAGE);
     }
 
+    /**
+     * Parses a storage-friendly string into a LocalDateTime object.
+     * @param raw The storage-friendly string to parse.
+     * @return The parsed LocalDateTime object.
+     */
     public static LocalDateTime parseStorageDateTime(String raw) {
         return LocalDateTime.parse(raw.trim(), STORAGE);
     }

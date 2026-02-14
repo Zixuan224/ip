@@ -1,5 +1,8 @@
 package sillyrat.parser;
 
+/**
+ * Represents arguments for an event task.
+ */
 public class EventArgs {
     private final String description;
     private final String fromRaw;

@@ -1,5 +1,8 @@
 package sillyrat.parser;
 
+/**
+ * Represents arguments for a deadline task.
+ */
 public class DeadlineArgs {
     private final String description;
     private final String byRaw;
