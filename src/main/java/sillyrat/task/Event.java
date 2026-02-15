@@ -3,10 +3,20 @@ package sillyrat.task;
 import sillyrat.common.DateTimeUtil;
 import java.time.LocalDateTime;
 
+/**
+ * Represents an event task.
+ * This class encapsulates an event task with a description, start time, and end time.
+ */
 public class Event extends Task {
     private final LocalDateTime from;
     private final LocalDateTime to;
 
+    /**
+     * Initialises a new Event task with a description, start time, and end time.
+     * @param description The text describing the task.
+     * @param from The start time of the event.
+     * @param to The end time of the event.
+     */
     public Event(String description, LocalDateTime from, LocalDateTime to) {
         super(description);
         this.from = from;

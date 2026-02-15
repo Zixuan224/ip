@@ -2,6 +2,10 @@ package sillyrat.task;
 
 import sillyrat.common.DateTimeUtil;
 
+/**
+ * Represents a task with description and no time attributes.
+ * This class serves as a base class for other task types.
+ */
 public class Task {
     protected String description;
     protected boolean isDone;

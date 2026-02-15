@@ -3,9 +3,19 @@ package sillyrat.task;
 import sillyrat.common.DateTimeUtil;
 import java.time.LocalDateTime;
 
+/**
+ * Represents a task that must be completed by a specific date and time.
+ * This class encapsulates a deadline attribute and provides methods for specialized display and storage formatting.
+ */
 public class Deadline extends Task {
     private final LocalDateTime by;
 
+    /**
+     * Initializes a new Deadline task with a description and time limit.
+     *
+     * @param description The text describing the task.
+     * @param by The date and time by which the task must be finished.
+     */
     public Deadline(String description, LocalDateTime by) {
         super(description);
         this.by = by;
