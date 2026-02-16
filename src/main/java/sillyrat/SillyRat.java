@@ -10,11 +10,21 @@ import sillyrat.ui.Ui;
 
 import java.io.IOException;
 
+/**
+ * Main entry point and program for the application.
+ * This class manages the application's lifecycle, including user interaction, task management, and storage.
+ */
 public class SillyRat {
 
     private static Ui ui;
     private static final Parser parser = new Parser();
 
+    /**
+     * Main entry point for the application.
+     *
+     * @param args Command line arguments
+     * @throws IOException If an I/O error occurs
+     */
     public static void main(String[] args) throws IOException {
         ui = new Ui();
         Storage storage = new Storage("data/silly-rat.txt");
@@ -58,6 +68,16 @@ public class SillyRat {
         ui.close();
     }
 
+    /**
+     * Handles user commands and performs corresponding actions.
+     *
+     * @param input The user input command.
+     * @param tasks The list of tasks.
+     * @param storage The storage for saving tasks.
+     * @return True if the application should exit, false otherwise.
+     * @throws SillyRatException If a SillyRat-specific exception occurs.
+     * @throws IOException If an I/O error occurs during storage operations.
+     */
     private static boolean handleCommand(String input, TaskList tasks, Storage storage)
             throws SillyRatException, IOException {
 
@@ -126,6 +146,11 @@ public class SillyRat {
         }
     }
 
+    /**
+     * Prints the list of tasks.
+     *
+     * @param tasks The list of tasks.
+     */
     private static void doList(TaskList tasks) {
         ui.showLine();
         if (tasks.isEmpty()) {
@@ -141,6 +166,12 @@ public class SillyRat {
         ui.showLine();
     }
 
+    /**
+     * Adds a new task without time-attribute to the list.
+     *
+     * @param args The parsed command arguments.
+     * @param tasks The list of tasks.
+     */
     private static void doTodo(TodoArgs args, TaskList tasks) {
         Task t = new Todo(args.getDescription());
         tasks.add(t);
@@ -152,6 +183,13 @@ public class SillyRat {
         ui.showLine();
     }
 
+    /**
+     * Adds a new task with a deadline to the list.
+     *
+     * @param args The parsed command arguments.
+     * @param tasks The list of tasks.
+     * @throws SillyRatException If the deadline format is invalid.
+     */
     private static void doDeadline(DeadlineArgs args, TaskList tasks) throws SillyRatException {
         java.time.LocalDateTime by;
         try {
@@ -170,6 +208,13 @@ public class SillyRat {
         ui.showLine();
     }
 
+    /**
+     * Add a new task with a time range to the list.
+     *
+     * @param args The parsed command arguments.
+     * @param tasks The list of tasks.
+     * @throws SillyRatException If the event time range is invalid.
+     */
     private static void doEvent(EventArgs args, TaskList tasks) throws SillyRatException {
         java.time.LocalDateTime from;
         java.time.LocalDateTime to;
@@ -194,6 +239,13 @@ public class SillyRat {
         ui.showLine();
     }
 
+    /**
+     * Marks a task as done or not done.
+     *
+     * @param idx The index of the task in the list.
+     * @param tasks The list of tasks.
+     * @param markDone True to mark the task as done, false to mark it as not done.
+     */
     private static void doMark(int idx, TaskList tasks, boolean markDone) {
         Task t = tasks.get(idx);
 
@@ -228,6 +280,12 @@ public class SillyRat {
         ui.showLine();
     }
 
+    /**
+     * Deletes a task from the list.
+     *
+     * @param idx The index of the task to delete.
+     * @param tasks The list of tasks.
+     */
     private static void doDelete(int idx, TaskList tasks) {
         Task removed = tasks.remove(idx);
 
@@ -238,6 +296,14 @@ public class SillyRat {
         ui.showLine();
     }
 
+    /**
+     * Convert task number to valid index and throw exception if invalid.
+     *
+     * @param taskNumber Task number input by user.
+     * @param size Number of tasks in the list.
+     * @return Valid index for the task.
+     * @throws SillyRatException If task number is out of range or list is empty.
+     */
     private static int toValidIndex(int taskNumber, int size) throws SillyRatException {
         if (size == 0) {
             throw new SillyRatException("Your list is empty. Nothing to do here.");
