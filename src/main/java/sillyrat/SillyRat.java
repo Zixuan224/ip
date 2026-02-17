@@ -1,20 +1,39 @@
 package sillyrat;
 
-// 1. ADD THESE IMPORTS
 import sillyrat.common.DateTimeUtil;
 import sillyrat.common.SillyRatException;
-import sillyrat.parser.*; // Imports Parser, ParsedCommand, and all Args classes
+import sillyrat.parser.DeadlineArgs;
+import sillyrat.parser.EventArgs;
+import sillyrat.parser.IndexArgs;
+import sillyrat.parser.ParsedCommand;
+import sillyrat.parser.Parser;
+import sillyrat.parser.TodoArgs;
 import sillyrat.storage.Storage;
-import sillyrat.task.*;   // Imports Task, TaskList, Todo, Deadline, Event
+import sillyrat.task.Deadline;
+import sillyrat.task.Event;
+import sillyrat.task.Task;
+import sillyrat.task.TaskList;
+import sillyrat.task.Todo;
 import sillyrat.ui.Ui;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
+/**
+ * Main class for the SillyRat task management application.
+ * Handles user interaction and coordinates between UI, storage, and task management.
+ */
 public class SillyRat {
 
     private static Ui ui;
-    private static final Parser parser = new Parser();
+    private static final Parser PARSER = new Parser();
 
+    /**
+     * Main entry point for the SillyRat application.
+     *
+     * @param args Command line arguments (not used).
+     * @throws IOException If there are I/O errors during execution.
+     */
     public static void main(String[] args) throws IOException {
         ui = new Ui();
         Storage storage = new Storage("data/silly-rat.txt");
@@ -58,74 +77,89 @@ public class SillyRat {
         ui.close();
     }
 
+    /**
+     * Handles a user command and executes the corresponding action.
+     *
+     * @param input The user input string.
+     * @param tasks The current task list.
+     * @param storage The storage handler for persisting tasks.
+     * @return True if the command is to exit, false otherwise.
+     * @throws SillyRatException If the command is invalid or execution fails.
+     * @throws IOException If there are I/O errors during storage operations.
+     */
     private static boolean handleCommand(String input, TaskList tasks, Storage storage)
             throws SillyRatException, IOException {
 
-        ParsedCommand parsed = parser.parse(input);
+        ParsedCommand parsed = PARSER.parse(input);
         String command = parsed.getCommandWord();
 
         switch (command) {
-            case "list":
-                doList(tasks);
-                return false;
+        case "list":
+            doList(tasks);
+            return false;
 
-            case "bye":
-                ui.showLine();
-                System.out.println(" See you! Please bring more food next time :)");
-                ui.showLine();
-                return true;
+        case "bye":
+            ui.showLine();
+            System.out.println(" See you! Please bring more food next time :)");
+            ui.showLine();
+            return true;
 
-            case "todo": {
-                TodoArgs args = (TodoArgs) parsed.getArgs();
-                doTodo(args, tasks);
-                storage.save(tasks);
-                return false;
-            }
+        case "todo": {
+            TodoArgs args = (TodoArgs) parsed.getArgs();
+            doTodo(args, tasks);
+            storage.save(tasks);
+            return false;
+        }
 
-            case "deadline": {
-                DeadlineArgs args = (DeadlineArgs) parsed.getArgs();
-                doDeadline(args, tasks);
-                storage.save(tasks);
-                return false;
-            }
+        case "deadline": {
+            DeadlineArgs args = (DeadlineArgs) parsed.getArgs();
+            doDeadline(args, tasks);
+            storage.save(tasks);
+            return false;
+        }
 
-            case "event": {
-                EventArgs args = (EventArgs) parsed.getArgs();
-                doEvent(args, tasks);
-                storage.save(tasks);
-                return false;
-            }
+        case "event": {
+            EventArgs args = (EventArgs) parsed.getArgs();
+            doEvent(args, tasks);
+            storage.save(tasks);
+            return false;
+        }
 
-            case "mark": {
-                IndexArgs args = (IndexArgs) parsed.getArgs();
-                int idx = toValidIndex(args.getTaskNumber(), tasks.size());
-                doMark(idx, tasks, true);
-                storage.save(tasks);
-                return false;
-            }
+        case "mark": {
+            IndexArgs args = (IndexArgs) parsed.getArgs();
+            int idx = toValidIndex(args.getTaskNumber(), tasks.size());
+            doMark(idx, tasks, true);
+            storage.save(tasks);
+            return false;
+        }
 
-            case "unmark": {
-                IndexArgs args = (IndexArgs) parsed.getArgs();
-                int idx = toValidIndex(args.getTaskNumber(), tasks.size());
-                doMark(idx, tasks, false);
-                storage.save(tasks);
-                return false;
-            }
+        case "unmark": {
+            IndexArgs args = (IndexArgs) parsed.getArgs();
+            int idx = toValidIndex(args.getTaskNumber(), tasks.size());
+            doMark(idx, tasks, false);
+            storage.save(tasks);
+            return false;
+        }
 
-            case "delete": {
-                IndexArgs args = (IndexArgs) parsed.getArgs();
-                int idx = toValidIndex(args.getTaskNumber(), tasks.size());
-                doDelete(idx, tasks);
-                storage.save(tasks);
-                return false;
-            }
+        case "delete": {
+            IndexArgs args = (IndexArgs) parsed.getArgs();
+            int idx = toValidIndex(args.getTaskNumber(), tasks.size());
+            doDelete(idx, tasks);
+            storage.save(tasks);
+            return false;
+        }
 
-            default:
-                throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                        + "todo, deadline, event, list, mark, unmark, delete, bye");
+        default:
+            throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
+                    + "todo, deadline, event, list, mark, unmark, delete, bye");
         }
     }
 
+    /**
+     * Displays all tasks in the task list.
+     *
+     * @param tasks The task list to display.
+     */
     private static void doList(TaskList tasks) {
         ui.showLine();
         if (tasks.isEmpty()) {
@@ -141,38 +175,58 @@ public class SillyRat {
         ui.showLine();
     }
 
+    /**
+     * Creates and adds a Todo task to the task list.
+     *
+     * @param args The arguments containing task description.
+     * @param tasks The task list to add to.
+     */
     private static void doTodo(TodoArgs args, TaskList tasks) {
-        Task t = new Todo(args.getDescription());
-        tasks.add(t);
+        Task task = new Todo(args.getDescription());
+        tasks.add(task);
 
         ui.showLine();
         System.out.println(" Got it. I've added this task:");
-        System.out.println("   " + t);
+        System.out.println("   " + task);
         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
         ui.showLine();
     }
 
+    /**
+     * Creates and adds a Deadline task to the task list.
+     *
+     * @param args The arguments containing task description and deadline.
+     * @param tasks The task list to add to.
+     * @throws SillyRatException If the date format is invalid.
+     */
     private static void doDeadline(DeadlineArgs args, TaskList tasks) throws SillyRatException {
-        java.time.LocalDateTime by;
+        LocalDateTime by;
         try {
             by = DateTimeUtil.parseUserDateTime(args.getByRaw());
         } catch (IllegalArgumentException e) {
             throw new SillyRatException(e.getMessage());
         }
 
-        Task t = new Deadline(args.getDescription(), by);
-        tasks.add(t);
+        Task task = new Deadline(args.getDescription(), by);
+        tasks.add(task);
 
         ui.showLine();
         System.out.println(" Got it. I've added this task:");
-        System.out.println("   " + t);
+        System.out.println("   " + task);
         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
         ui.showLine();
     }
 
+    /**
+     * Creates and adds an Event task to the task list.
+     *
+     * @param args The arguments containing task description, start time, and end time.
+     * @param tasks The task list to add to.
+     * @throws SillyRatException If the date format is invalid or end time is before start time.
+     */
     private static void doEvent(EventArgs args, TaskList tasks) throws SillyRatException {
-        java.time.LocalDateTime from;
-        java.time.LocalDateTime to;
+        LocalDateTime from;
+        LocalDateTime to;
         try {
             from = DateTimeUtil.parseUserDateTime(args.getFromRaw());
             to = DateTimeUtil.parseUserDateTime(args.getToRaw());
@@ -184,50 +238,61 @@ public class SillyRat {
             throw new SillyRatException("Event end must not be earlier than start.");
         }
 
-        Task t = new Event(args.getDescription(), from, to);
-        tasks.add(t);
+        Task task = new Event(args.getDescription(), from, to);
+        tasks.add(task);
 
         ui.showLine();
         System.out.println(" Got it. I've added this task:");
-        System.out.println("   " + t);
+        System.out.println("   " + task);
         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
         ui.showLine();
     }
 
+    /**
+     * Marks or unmarks a task as done.
+     *
+     * @param idx The index of the task in the list.
+     * @param tasks The task list.
+     * @param markDone True to mark as done, false to unmark.
+     */
     private static void doMark(int idx, TaskList tasks, boolean markDone) {
-        Task t = tasks.get(idx);
+        Task task = tasks.get(idx);
 
         if (markDone) {
-            // 2. CHANGED t.isDone to t.isDone()
-            if (t.isDone()) {
+            if (task.isDone()) {
                 ui.showLine();
                 System.out.println(" Master... It's already marked done.");
                 ui.showLine();
                 return;
             }
-            t.markDone();
+            task.markDone();
             ui.showLine();
             System.out.println(" Nice! I've marked this task as done:");
-            System.out.println("   " + t);
+            System.out.println("   " + task);
             ui.showLine();
             return;
         }
 
-        // 3. CHANGED t.isDone to t.isDone()
-        if (!t.isDone()) {
+        if (!task.isDone()) {
             ui.showLine();
             System.out.println(" Wake up Master... It's unchecked already.");
             ui.showLine();
             return;
         }
 
-        t.unmarkDone();
+        task.unmarkDone();
         ui.showLine();
         System.out.println(" OK! I've marked this task as not done yet:");
-        System.out.println("   " + t);
+        System.out.println("   " + task);
         ui.showLine();
     }
 
+    /**
+     * Deletes a task from the task list.
+     *
+     * @param idx The index of the task in the list.
+     * @param tasks The task list.
+     */
     private static void doDelete(int idx, TaskList tasks) {
         Task removed = tasks.remove(idx);
 
@@ -238,6 +303,14 @@ public class SillyRat {
         ui.showLine();
     }
 
+    /**
+     * Converts the task number to a valid index for the task list.
+     *
+     * @param taskNumber The task number input by the user.
+     * @param size The size of the task list.
+     * @return The valid index for the task list.
+     * @throws SillyRatException If the task number is out of range.
+     */
     private static int toValidIndex(int taskNumber, int size) throws SillyRatException {
         if (size == 0) {
             throw new SillyRatException("Your list is empty. Nothing to do here.");

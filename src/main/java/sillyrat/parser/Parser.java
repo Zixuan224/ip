@@ -15,31 +15,31 @@ public class Parser {
         String rest = (parts.length > 1) ? parts[1].trim() : "";
 
         switch (commandWord) {
-            case "list":
-                requireNoArgs(commandWord, rest);
-                return new ParsedCommand(commandWord, new NoArgs());
+        case "list":
+            requireNoArgs(commandWord, rest);
+            return new ParsedCommand(commandWord, new NoArgs());
 
-            case "bye":
-                requireNoArgs(commandWord, rest);
-                return new ParsedCommand(commandWord, new NoArgs());
+        case "bye":
+            requireNoArgs(commandWord, rest);
+            return new ParsedCommand(commandWord, new NoArgs());
 
-            case "todo":
-                return new ParsedCommand(commandWord, parseTodoArgs(rest));
+        case "todo":
+            return new ParsedCommand(commandWord, parseTodoArgs(rest));
 
-            case "deadline":
-                return new ParsedCommand(commandWord, parseDeadlineArgs(rest));
+        case "deadline":
+            return new ParsedCommand(commandWord, parseDeadlineArgs(rest));
 
-            case "event":
-                return new ParsedCommand(commandWord, parseEventArgs(rest));
+        case "event":
+            return new ParsedCommand(commandWord, parseEventArgs(rest));
 
-            case "mark":
-            case "unmark":
-            case "delete":
-                return new ParsedCommand(commandWord, parseIndexArgs(commandWord, rest));
+        case "mark":
+        case "unmark":
+        case "delete":
+            return new ParsedCommand(commandWord, parseIndexArgs(commandWord, rest));
 
-            default:
-                throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                        + "todo, deadline, event, list, mark, unmark, delete, bye");
+        default:
+            throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
+                    + "todo, deadline, event, list, mark, unmark, delete, bye");
         }
     }
 
