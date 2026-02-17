@@ -43,20 +43,20 @@ public class Task {
 
         Task task;
         switch (type) {
-            case "T":
-                task = new Todo(parts[2]);
-                break;
-            case "D":
-                task = new Deadline(parts[2], DateTimeUtil.parseStorageDateTime(parts[3]));
-                break;
-            case "E":
-                task = new Event(parts[2],
-                        DateTimeUtil.parseStorageDateTime(parts[3]),
-                        DateTimeUtil.parseStorageDateTime(parts[4]));
-                break;
-            default:
-                task = new Task(parts.length > 2 ? parts[2] : "");
-                break;
+        case "T":
+            task = new Todo(parts[2]);
+            break;
+        case "D":
+            task = new Deadline(parts[2], DateTimeUtil.parseStorageDateTime(parts[3]));
+            break;
+        case "E":
+            task = new Event(parts[2],
+                    DateTimeUtil.parseStorageDateTime(parts[3]),
+                    DateTimeUtil.parseStorageDateTime(parts[4]));
+            break;
+        default:
+            task = new Task(parts.length > 2 ? parts[2] : "");
+            break;
         }
 
         if (done) {
