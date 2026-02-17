@@ -66,6 +66,10 @@ public class Task {
         return task;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public String toSaveString() {
         return getTypeIcon() + "\t" + (isDone ? "1" : "0") + "\t" + description;
     }

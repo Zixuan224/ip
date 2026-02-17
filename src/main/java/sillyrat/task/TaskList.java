@@ -37,4 +37,10 @@ public class TaskList {
     public List<Task> asList() {
         return tasks;
     }
+
+    public List<Task> find(String keywords) {
+        return tasks.stream()
+                .filter(task -> task.getDescription().contains(keywords))
+                .toList();
+    }
 }
