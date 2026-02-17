@@ -9,6 +9,7 @@ import sillyrat.task.*;   // Imports Task, TaskList, Todo, Deadline, Event
 import sillyrat.ui.Ui;
 
 import java.io.IOException;
+import java.util.List;
 
 public class SillyRat {
 
@@ -120,9 +121,15 @@ public class SillyRat {
                 return false;
             }
 
+        case "find": {
+            FindArgs args = (FindArgs) parsed.getArgs();
+            doFind(args, tasks);
+            return false;
+        }
+
             default:
                 throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                        + "todo, deadline, event, list, mark, unmark, delete, bye");
+                        + "todo, deadline, event, list, mark, unmark, delete, find, bye");
         }
     }
 
@@ -235,6 +242,22 @@ public class SillyRat {
         System.out.println(" Noted. I've removed this task:");
         System.out.println("   " + removed);
         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+        ui.showLine();
+    }
+
+    private static void doFind(FindArgs args, TaskList tasks) {
+        String keywords = args.getSearchString();
+        List<Task> foundTasks = tasks.find(keywords);
+
+        ui.showLine();
+        if (foundTasks.isEmpty()) {
+            System.out.println(" No tasks found matching your search term, Master.");
+        } else {
+            System.out.println(" Here are the matching tasks in your list:");
+            for (int i = 0; i < foundTasks.size(); i++) {
+                System.out.println(" " + (i + 1) + "." +foundTasks.get(i));
+            }
+        }
         ui.showLine();
     }
 

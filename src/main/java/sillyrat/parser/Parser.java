@@ -32,6 +32,9 @@ public class Parser {
             case "event":
                 return new ParsedCommand(commandWord, parseEventArgs(rest));
 
+            case "find":
+                return new ParsedCommand(commandWord, parseFindArgs(rest));
+
             case "mark":
             case "unmark":
             case "delete":
@@ -39,7 +42,7 @@ public class Parser {
 
             default:
                 throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                        + "todo, deadline, event, list, mark, unmark, delete, bye");
+                        + "todo, deadline, event, list, mark, unmark, delete, find, bye");
         }
     }
 
@@ -82,12 +85,12 @@ public class Parser {
 
     private EventArgs parseEventArgs(String rest) throws SillyRatException {
         if (rest.isEmpty()) {
-            throw new SillyRatException("Event needs details. Example: event meeting /from Mon 2pm /to 4pm");
+            throw new SillyRatException("Event needs details. Example: event meeting /from 2026-05-05 14:00 /to 2026-05-05 16:00");
         }
 
         String[] fromSplit = rest.split(" /from ", 2);
         if (fromSplit.length < 2) {
-            throw new SillyRatException("Event format: event <task> /from <start> /to <end>");
+            throw new SillyRatException("Event format: event <task> /from yyyy-MM-dd HH:mm /to yyyy-MM-dd HH:mm");
         }
 
         String desc = fromSplit[0].trim();
@@ -95,7 +98,7 @@ public class Parser {
 
         String[] toSplit = afterFrom.split(" /to ", 2);
         if (toSplit.length < 2) {
-            throw new SillyRatException("Event format: event <task> /from <start> /to <end>");
+            throw new SillyRatException("Event format: event <task> /from yyyy-MM-dd HH:mm /to yyyy-MM-dd HH:mm");
         }
 
         String fromRaw = toSplit[0].trim();
@@ -112,6 +115,13 @@ public class Parser {
         }
 
         return new EventArgs(desc, fromRaw, toRaw);
+    }
+
+    private FindArgs parseFindArgs(String rest) throws SillyRatException {
+        if (rest.isEmpty()) {
+            throw new SillyRatException("Please provide a search term. Example: find book");
+        }
+        return new FindArgs(rest);
     }
 
     private IndexArgs parseIndexArgs(String commandWord, String rest) throws SillyRatException {
