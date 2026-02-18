@@ -3,6 +3,9 @@ package sillyrat.task;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a list of tasks.
+ */
 public class TaskList {
     private final ArrayList<Task> tasks;
 
@@ -34,10 +37,19 @@ public class TaskList {
         return tasks.isEmpty();
     }
 
+    /**
+     * Returns the list of tasks.
+     * @return The list of tasks.
+     */
     public List<Task> asList() {
         return tasks;
     }
 
+    /**
+     * Finds tasks containing the given keywords in their descriptions.
+     * @param keywords The keywords to search for.
+     * @return A list of tasks matching the keywords.
+     */
     public List<Task> find(String keywords) {
         return tasks.stream()
                 .filter(task -> task.getDescription().contains(keywords))

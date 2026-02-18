@@ -1,8 +1,4 @@
 package sillyrat.storage;
-
-import sillyrat.task.Task;
-import sillyrat.task.TaskList;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,6 +7,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+
+import sillyrat.task.Task;
+import sillyrat.task.TaskList;
 
 /**
  * Storage class to save tasks added and load tasks from the file.

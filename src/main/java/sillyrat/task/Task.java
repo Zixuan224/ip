@@ -10,6 +10,10 @@ public class Task {
     protected String description;
     protected boolean isDone;
 
+    /**
+     * Initializes a new Task with a description.
+     * @param description The text describing the task.
+     */
     public Task(String description) {
         this.description = description;
         this.isDone = false;
@@ -31,10 +35,20 @@ public class Task {
         return isDone ? "X" : " ";
     }
 
+    /**
+     * Returns the type icon for the task.
+     *
+     * @return The type icon as a string.
+     */
     protected String getTypeIcon() {
         return " ";
     }
 
+    /**
+     * Loads a task from the given string.
+     * @param line The string representation of the task.
+     * @return The loaded task object.
+     */
     public static Task toLoadTask(String line) {
         String[] parts = line.split("\t");
 

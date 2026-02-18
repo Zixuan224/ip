@@ -96,7 +96,8 @@ public class Parser {
 
     private EventArgs parseEventArgs(String rest) throws SillyRatException {
         if (rest.isEmpty()) {
-            throw new SillyRatException("Event needs details. Example: event meeting /from 2026-05-05 14:00 /to 2026-05-05 16:00");
+            throw new SillyRatException("Event needs details."
+                    + " Example: event meeting /from 2026-05-05 14:00 /to 2026-05-05 16:00");
         }
 
         String[] fromSplit = rest.split(" /from ", 2);
@@ -128,7 +129,8 @@ public class Parser {
         return new EventArgs(desc, fromRaw, toRaw);
     }
 
-    private FindArgs parseFindArgs(String rest) throws SillyRatException {
+    private FindArgs parseFindArgs(String rest)
+            throws SillyRatException {
         if (rest.isEmpty()) {
             throw new SillyRatException("Please provide a search term. Example: find book");
         }
