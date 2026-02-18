@@ -4,6 +4,7 @@ import sillyrat.common.DateTimeUtil;
 import sillyrat.common.SillyRatException;
 import sillyrat.parser.DeadlineArgs;
 import sillyrat.parser.EventArgs;
+import sillyrat.parser.FindArgs;
 import sillyrat.parser.IndexArgs;
 import sillyrat.parser.ParsedCommand;
 import sillyrat.parser.Parser;
