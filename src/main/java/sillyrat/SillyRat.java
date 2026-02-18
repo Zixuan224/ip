@@ -1,4 +1,8 @@
+
 package sillyrat;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import sillyrat.common.DateTimeUtil;
 import sillyrat.common.SillyRatException;
@@ -16,10 +20,6 @@ import sillyrat.task.Task;
 import sillyrat.task.TaskList;
 import sillyrat.task.Todo;
 import sillyrat.ui.Ui;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Main class for the SillyRat task management application.
@@ -321,7 +321,7 @@ public class SillyRat {
         } else {
             System.out.println(" Here are the matching tasks in your list:");
             for (int i = 0; i < foundTasks.size(); i++) {
-                System.out.println(" " + (i + 1) + "." +foundTasks.get(i));
+                System.out.println(" " + (i + 1) + "." + foundTasks.get(i));
             }
         }
         ui.showLine();
