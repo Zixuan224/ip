@@ -25,16 +25,16 @@ public class MainWindow extends AnchorPane {
     private SillyRat sillyRat;
 
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/CatBoss.png"));
-    private Image dukeImage = new Image(this.getClass().getResourceAsStream("/images/SillyRat.png"));
+    private Image ratImage = new Image(this.getClass().getResourceAsStream("/images/SillyRat.png"));
 
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
     }
 
-    /** Injects the Duke instance */
-    public void setDuke(Duke d) {
-        duke = d;
+    /** Injects the SillyRat instance */
+    public void setSillyRat(SillyRat sr) {
+        this.sillyRat = sr;
     }
 
     /**
@@ -44,10 +44,10 @@ public class MainWindow extends AnchorPane {
     @FXML
     private void handleUserInput() {
         String input = userInput.getText();
-        String response = duke.getResponse(input);
+        String response = sillyRat.getResponse(input);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
-                DialogBox.getDukeDialog(response, dukeImage)
+                DialogBox.getDukeDialog(response, ratImage)
         );
         userInput.clear();
     }
