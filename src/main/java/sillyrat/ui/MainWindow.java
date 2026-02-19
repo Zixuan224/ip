@@ -38,8 +38,10 @@ public class MainWindow extends AnchorPane {
     }
 
     /**
-     * Creates two dialog boxes, one echoing user input and the other containing Duke's reply and then appends them to
-     * the dialog container. Clears the user input after processing.
+     * Creates two dialog boxes.
+     * One echoing user input.
+     * The other containing SillyRat's reply and then appends them to the dialog container.
+     * Clears the user input after processing.
      */
     @FXML
     private void handleUserInput() {
@@ -47,7 +49,7 @@ public class MainWindow extends AnchorPane {
         String response = sillyRat.getResponse(input);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
-                DialogBox.getDukeDialog(response, ratImage)
+                DialogBox.getSillyRatDialog(response, ratImage)
         );
         userInput.clear();
     }
