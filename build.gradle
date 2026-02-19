@@ -44,7 +44,7 @@ test {
 }
 
 application {
-    mainClass.set("sillyrat.SillyRat")
+    mainClass.set("sillyrat.Launcher")
 }
 
 checkstyle {
