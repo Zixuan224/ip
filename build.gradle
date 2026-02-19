@@ -49,6 +49,7 @@ application {
 
 checkstyle {
     toolVersion = '11.1.0'
+}
 
 
 shadowJar {
