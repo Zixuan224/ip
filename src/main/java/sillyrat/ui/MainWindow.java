@@ -33,9 +33,16 @@ public class MainWindow extends AnchorPane {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
     }
 
-    /** Injects the SillyRat instance */
     public void setSillyRat(SillyRat sr) {
         this.sillyRat = sr;
+        showStartupReminder();
+    }
+
+    private void showStartupReminder() {
+        String reminder = sillyRat.getStartupReminder();
+        dialogContainer.getChildren().add(
+                DialogBox.getSillyRatDialog(reminder, ratImage)
+        );
     }
 
     /**

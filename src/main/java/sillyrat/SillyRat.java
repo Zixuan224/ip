@@ -44,6 +44,28 @@ public class SillyRat {
         this("data/silly-rat.txt");
     }
 
+    /**
+     * Returns a startup greeting with reminders about upcoming tasks.
+     *
+     * @return The greeting and reminder message.
+     */
+    public String getStartupReminder() {
+        String greeting = "Hello Master! SillyRat at your service!";
+        List<Task> upcoming = tasks.getUpcoming(REMINDER_DAYS);
+
+        if (upcoming.isEmpty()) {
+            return greeting + "\nNo upcoming deadlines or events. Relax!";
+        }
+
+        StringBuilder sb = new StringBuilder(greeting);
+        sb.append("\n\nSqueak! Reminder — these tasks are due in the next ")
+                .append(REMINDER_DAYS).append(" days:\n");
+        for (int i = 0; i < upcoming.size(); i++) {
+            sb.append(i + 1).append(". ").append(upcoming.get(i)).append("\n");
+        }
+        return sb.toString().trim();
+    }
+
     public String getResponse(String input) {
         try {
             ParsedCommand parsed = PARSER.parse(input);
