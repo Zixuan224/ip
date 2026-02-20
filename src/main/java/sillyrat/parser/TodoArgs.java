@@ -14,4 +14,8 @@ public class TodoArgs {
     public TodoArgs(String description) {
         this.description = description;
     }
+
+    public String getDescription() {
+        return description;
+    }
 }

@@ -14,4 +14,8 @@ public class IndexArgs {
     public IndexArgs(int taskNumber) {
         this.taskNumber = taskNumber;
     }
+
+    public int getTaskNumber() {
+        return taskNumber;
+    }
 }
