@@ -6,6 +6,7 @@ import java.util.List;
 
 import sillyrat.common.DateTimeUtil;
 import sillyrat.common.SillyRatException;
+import sillyrat.parser.Command;
 import sillyrat.parser.DeadlineArgs;
 import sillyrat.parser.EventArgs;
 import sillyrat.parser.FindArgs;
@@ -46,70 +47,7 @@ public class SillyRat {
     public String getResponse(String input) {
         try {
             ParsedCommand parsed = PARSER.parse(input);
-            String command = parsed.getCommandWord();
-
-            switch (command) {
-            case "list":
-                return replyList();
-
-            case "bye":
-                return "See you! Please bring more food next time :)";
-
-            case "todo": {
-                TodoArgs args = (TodoArgs) parsed.getArgs();
-                String msg = replyTodo(args);
-                storage.save(tasks);
-                return msg;
-            }
-
-            case "deadline": {
-                DeadlineArgs args = (DeadlineArgs) parsed.getArgs();
-                String msg = replyDeadline(args);
-                storage.save(tasks);
-                return msg;
-            }
-
-            case "event": {
-                EventArgs args = (EventArgs) parsed.getArgs();
-                String msg = replyEvent(args);
-                storage.save(tasks);
-                return msg;
-            }
-
-            case "mark": {
-                IndexArgs args = (IndexArgs) parsed.getArgs();
-                int idx = toValidIndex(args.getTaskNumber(), tasks.size());
-                String msg = replyMark(idx, true);
-                storage.save(tasks);
-                return msg;
-            }
-
-            case "unmark": {
-                IndexArgs args = (IndexArgs) parsed.getArgs();
-                int idx = toValidIndex(args.getTaskNumber(), tasks.size());
-                String msg = replyMark(idx, false);
-                storage.save(tasks);
-                return msg;
-            }
-
-            case "delete": {
-                IndexArgs args = (IndexArgs) parsed.getArgs();
-                int idx = toValidIndex(args.getTaskNumber(), tasks.size());
-                String msg = replyDelete(idx);
-                storage.save(tasks);
-                return msg;
-            }
-
-            case "find": {
-                FindArgs args = (FindArgs) parsed.getArgs();
-                return replyFind(args);
-            }
-
-            default:
-                throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                        + "todo, deadline, event, list, mark, unmark, delete, find, bye");
-            }
-
+            return executeCommand(parsed);
         } catch (SillyRatException e) {
             return e.getMessage();
         } catch (Exception e) {
@@ -117,7 +55,66 @@ public class SillyRat {
         }
     }
 
-    //region Reponses
+    private String executeCommand(ParsedCommand parsed) throws SillyRatException, IOException {
+        Command command = parsed.getCommand();
+
+        switch (command) {
+        case LIST:
+            return replyList();
+
+        case BYE:
+            return "See you! Please bring more food next time :)";
+
+        case TODO:
+            return addTaskAndSave(replyTodo((TodoArgs) parsed.getArgs()));
+
+        case DEADLINE:
+            return addTaskAndSave(replyDeadline((DeadlineArgs) parsed.getArgs()));
+
+        case EVENT:
+            return addTaskAndSave(replyEvent((EventArgs) parsed.getArgs()));
+
+        case MARK:
+            return modifyTaskAndSave(parsed, true);
+
+        case UNMARK:
+            return modifyTaskAndSave(parsed, false);
+
+        case DELETE:
+            return deleteTaskAndSave(parsed);
+
+        case FIND:
+            return replyFind((FindArgs) parsed.getArgs());
+
+        default:
+            throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
+                    + "todo, deadline, event, list, mark, unmark, delete, find, bye");
+        }
+    }
+
+    private String addTaskAndSave(String replyMessage) throws IOException {
+        storage.save(tasks);
+        return replyMessage;
+    }
+
+    private String modifyTaskAndSave(ParsedCommand parsed, boolean markDone)
+            throws SillyRatException, IOException {
+        IndexArgs args = (IndexArgs) parsed.getArgs();
+        int idx = toValidIndex(args.getTaskNumber(), tasks.size());
+        String msg = replyMark(idx, markDone);
+        storage.save(tasks);
+        return msg;
+    }
+
+    private String deleteTaskAndSave(ParsedCommand parsed) throws SillyRatException, IOException {
+        IndexArgs args = (IndexArgs) parsed.getArgs();
+        int idx = toValidIndex(args.getTaskNumber(), tasks.size());
+        String msg = replyDelete(idx);
+        storage.save(tasks);
+        return msg;
+    }
+
+    //region Responses
     private String replyList() {
         if (tasks.isEmpty()) {
             return "Your list is empty. Feed me tasks with todo/deadline/event.";
@@ -173,19 +170,20 @@ public class SillyRat {
     private String replyMark(int idx, boolean markDone) {
         Task task = tasks.get(idx);
 
+        if (markDone && task.isDone()) {
+            return "Master... It's already marked done.";
+        }
+        if (!markDone && !task.isDone()) {
+            return "Wake up Master... It's unchecked already.";
+        }
+
         if (markDone) {
-            if (task.isDone()) {
-                return "Master... It's already marked done.";
-            }
             task.markDone();
             return "Nice! I've marked this task as done:\n  " + task;
-        } else {
-            if (!task.isDone()) {
-                return "Wake up Master... It's unchecked already.";
-            }
-            task.unmarkDone();
-            return "OK! I've marked this task as not done yet:\n  " + task;
         }
+
+        task.unmarkDone();
+        return "OK! I've marked this task as not done yet:\n  " + task;
     }
 
     private String replyDelete(int idx) {

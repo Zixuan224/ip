@@ -7,6 +7,10 @@ import sillyrat.common.DateTimeUtil;
  * This class serves as a base class for other task types.
  */
 public class Task {
+    protected static final String FIELD_SEPARATOR = "\t";
+    protected static final String DONE_MARKER = "1";
+    protected static final String NOT_DONE_MARKER = "0";
+
     protected String description;
     protected boolean isDone;
 
@@ -50,28 +54,12 @@ public class Task {
      * @return The loaded task object.
      */
     public static Task toLoadTask(String line) {
-        String[] parts = line.split("\t");
+        String[] parts = line.split(FIELD_SEPARATOR);
 
         String type = parts[0];
-        boolean done = parts[1].equals("1");
+        boolean done = parts[1].equals(DONE_MARKER);
 
-        Task task;
-        switch (type) {
-        case "T":
-            task = new Todo(parts[2]);
-            break;
-        case "D":
-            task = new Deadline(parts[2], DateTimeUtil.parseStorageDateTime(parts[3]));
-            break;
-        case "E":
-            task = new Event(parts[2],
-                    DateTimeUtil.parseStorageDateTime(parts[3]),
-                    DateTimeUtil.parseStorageDateTime(parts[4]));
-            break;
-        default:
-            task = new Task(parts.length > 2 ? parts[2] : "");
-            break;
-        }
+        Task task = createTaskFromParts(type, parts);
 
         if (done) {
             task.markDone();
@@ -80,12 +68,28 @@ public class Task {
         return task;
     }
 
+    private static Task createTaskFromParts(String type, String[] parts) {
+        switch (type) {
+        case "T":
+            return new Todo(parts[2]);
+        case "D":
+            return new Deadline(parts[2], DateTimeUtil.parseStorageDateTime(parts[3]));
+        case "E":
+            return new Event(parts[2],
+                    DateTimeUtil.parseStorageDateTime(parts[3]),
+                    DateTimeUtil.parseStorageDateTime(parts[4]));
+        default:
+            return new Task(parts.length > 2 ? parts[2] : "");
+        }
+    }
+
     public String getDescription() {
         return description;
     }
 
     public String toSaveString() {
-        return getTypeIcon() + "\t" + (isDone ? "1" : "0") + "\t" + description;
+        return getTypeIcon() + FIELD_SEPARATOR + (isDone ? DONE_MARKER : NOT_DONE_MARKER)
+                + FIELD_SEPARATOR + description;
     }
 
     @Override

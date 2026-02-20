@@ -28,9 +28,12 @@ public class Storage {
 
     private void ensureExists() throws IOException {
         Path dir = this.filePath.getParent();
-        if (dir != null && Files.notExists(dir)) {
+
+        boolean hasParentDir = dir != null;
+        if (hasParentDir && Files.notExists(dir)) {
             Files.createDirectories(dir);
         }
+
         if (Files.notExists(this.filePath)) {
             Files.createFile(this.filePath);
         }
