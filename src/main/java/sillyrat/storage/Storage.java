@@ -23,7 +23,9 @@ public class Storage {
      * @param filePath Path to the storage file
      */
     public Storage(String filePath) {
+        assert filePath != null && !filePath.trim().isEmpty() : "File path cannot be null or empty";
         this.filePath = Paths.get(filePath);
+        assert this.filePath != null : "Path creation should succeed";
     }
 
     private void ensureExists() throws IOException {

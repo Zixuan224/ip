@@ -55,9 +55,11 @@ public class Task {
      */
     public static Task toLoadTask(String line) {
         String[] parts = line.split(FIELD_SEPARATOR);
+        assert parts.length >= 2 : "Task line must have at least type and done status";
 
         String type = parts[0];
         boolean done = parts[1].equals(DONE_MARKER);
+        assert type.matches("[TDE ]") : "Task type must be T, D, E, or space";
 
         Task task = createTaskFromParts(type, parts);
 
@@ -71,10 +73,13 @@ public class Task {
     private static Task createTaskFromParts(String type, String[] parts) {
         switch (type) {
         case "T":
+            assert parts.length >= 3 : "Todo must have description";
             return new Todo(parts[2]);
         case "D":
+            assert parts.length >= 4 : "Deadline must have description and by date";
             return new Deadline(parts[2], DateTimeUtil.parseStorageDateTime(parts[3]));
         case "E":
+            assert parts.length >= 5 : "Event must have description, from and to dates";
             return new Event(parts[2],
                     DateTimeUtil.parseStorageDateTime(parts[3]),
                     DateTimeUtil.parseStorageDateTime(parts[4]));
