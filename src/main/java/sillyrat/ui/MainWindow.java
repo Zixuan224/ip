@@ -12,6 +12,7 @@ import sillyrat.SillyRat;
 
 /**
  * Controller for the main GUI.
+ * Javadoc comments in this class were written with the assistance of AI (ChatGPT, Claude).
  */
 public class MainWindow extends AnchorPane {
     @FXML
@@ -33,11 +34,19 @@ public class MainWindow extends AnchorPane {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
     }
 
+    /**
+     * Injects the SillyRat instance and displays the startup reminder dialog.
+     *
+     * @param sr The SillyRat application instance.
+     */
     public void setSillyRat(SillyRat sr) {
         this.sillyRat = sr;
         showStartupReminder();
     }
 
+    /**
+     * Displays the startup reminder from SillyRat as an initial dialog box.
+     */
     private void showStartupReminder() {
         String reminder = sillyRat.getStartupReminder();
         dialogContainer.getChildren().add(

@@ -12,15 +12,16 @@ import sillyrat.task.Task;
 import sillyrat.task.TaskList;
 
 /**
- * Storage class to save tasks added and load tasks from the file.
+ * Handles reading and writing tasks to a file on disk.
+ * Provides methods to load tasks from persistent storage and save them back.
  */
-
 public class Storage {
     private final Path filePath;
 
     /**
-     * Constructor for Storage class.
-     * @param filePath Path to the storage file
+     * Constructs a new Storage instance with the specified file path.
+     *
+     * @param filePath The path to the storage file.
      */
     public Storage(String filePath) {
         assert filePath != null && !filePath.trim().isEmpty() : "File path cannot be null or empty";
@@ -42,10 +43,11 @@ public class Storage {
     }
 
     /**
-     * Loads tasks from the storage file.
-     * This method reads tasks from the file and convert them to appropriate Task objects for output.
-     * @return a list of tasks loaded from the file
-     * @throws IOException If an I/O error occurs
+     * Loads tasks from the storage file and returns them as a list.
+     * Skips empty lines in the file. Creates the file if it does not yet exist.
+     *
+     * @return A list of tasks loaded from the file.
+     * @throws IOException If an I/O error occurs while reading.
      */
     public List<Task> load() throws IOException {
         ensureExists();
@@ -63,10 +65,11 @@ public class Storage {
     }
 
     /**
-     * Saves tasks to the storage file.
-     * This method converts tasks to their string representation and writes them to the file.
-     * @param tasks List of tasks to be saved
-     * @throws IOException If an I/O error occurs
+     * Saves all tasks in the given task list to the storage file.
+     * Overwrites the existing file content.
+     *
+     * @param tasks The task list to be saved.
+     * @throws IOException If an I/O error occurs while writing.
      */
     public void save(TaskList tasks) throws IOException {
         ensureExists();

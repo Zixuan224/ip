@@ -12,7 +12,8 @@ public class Event extends Task {
     private final LocalDateTime to;
 
     /**
-     * Initialises a new Event task with a description, start time, and end time.
+     * Initializes a new Event task with a description, start time, and end time.
+     *
      * @param description The text describing the task.
      * @param from The start time of the event.
      * @param to The end time of the event.
@@ -22,7 +23,7 @@ public class Event extends Task {
         assert from != null : "Event start time cannot be null";
         assert to != null : "Event end time cannot be null";
         assert !to.isBefore(from) : "Event end time must not be before start time";
-        
+
         this.from = from;
         this.to = to;
     }

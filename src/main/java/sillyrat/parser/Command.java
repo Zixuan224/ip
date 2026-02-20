@@ -1,7 +1,7 @@
 package sillyrat.parser;
 
 /**
- * Enumerates all recognised commands.
+ * Enumerates all recognized user commands supported by the SillyRat chatbot.
  */
 public enum Command {
     LIST, BYE, TODO, DEADLINE, EVENT, MARK, UNMARK, DELETE, FIND, REMIND;

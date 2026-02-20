@@ -5,15 +5,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a list of tasks.
+ * Represents a list of tasks and provides operations to add, remove, search,
+ * and retrieve upcoming tasks.
+ * The {@link #getUpcoming(int)} method was developed with the assistance of AI (ChatGPT, Claude).
+ * Javadoc comments in this class were written with the assistance of AI (ChatGPT, Claude).
  */
 public class TaskList {
     private final ArrayList<Task> tasks;
 
+    /**
+     * Constructs an empty task list.
+     */
     public TaskList() {
         tasks = new ArrayList<>();
     }
 
+    /**
+     * Constructs a task list initialized with the given list of tasks.
+     *
+     * @param initialTasks The initial tasks to populate the list with.
+     */
     public TaskList(List<Task> initialTasks) {
         tasks = new ArrayList<>(initialTasks);
     }
@@ -61,10 +72,13 @@ public class TaskList {
     }
 
     /**
-     * Returns undone deadlines and events that are due/starting within the given number of days.
+     * Returns undone deadlines and events that are due or starting within
+     * the given number of days from now.
+     * Completed tasks are excluded from the results.
+     * This method was developed with the assistance of AI (ChatGPT, Claude).
      *
      * @param days The number of days ahead to look for upcoming tasks.
-     * @return A list of upcoming tasks sorted naturally by list order.
+     * @return A list of upcoming undone tasks in their original list order.
      */
     public List<Task> getUpcoming(int days) {
         LocalDateTime now = LocalDateTime.now();

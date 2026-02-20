@@ -3,15 +3,16 @@ package sillyrat.parser;
 import sillyrat.common.SillyRatException;
 
 /**
- * Represent parser for user input
+ * Parses raw user input strings into structured {@link ParsedCommand} objects.
  */
 public class Parser {
 
     /**
-     * Parse user input and execute the corresponding command.
-     * @param input User input
-     * @return
-     * @throws SillyRatException Exceptions for invalid input
+     * Parses the given user input and returns a structured command with its arguments.
+     *
+     * @param input The raw user input string.
+     * @return The parsed command containing the command type and arguments.
+     * @throws SillyRatException If the input is empty or contains an unrecognized command.
      */
     public ParsedCommand parse(String input) throws SillyRatException {
         if (input == null || input.trim().isEmpty()) {

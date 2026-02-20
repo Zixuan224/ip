@@ -17,6 +17,7 @@ import javafx.scene.layout.HBox;
 /**
  * Represents a dialog box consisting of an ImageView to represent the speaker's face
  * and a label containing text from the speaker.
+ * Javadoc comments in this class were written with the assistance of AI (ChatGPT, Claude).
  */
 public class DialogBox extends HBox {
     @FXML
@@ -48,10 +49,24 @@ public class DialogBox extends HBox {
         setAlignment(Pos.TOP_LEFT);
     }
 
+    /**
+     * Creates a dialog box for user messages, with the image on the right.
+     *
+     * @param text The text to display in the dialog.
+     * @param img The image representing the user.
+     * @return A new DialogBox instance for the user.
+     */
     public static DialogBox getUserDialog(String text, Image img) {
         return new DialogBox(text, img);
     }
 
+    /**
+     * Creates a dialog box for SillyRat messages, with the image on the left.
+     *
+     * @param text The text to display in the dialog.
+     * @param img The image representing SillyRat.
+     * @return A new DialogBox instance for SillyRat.
+     */
     public static DialogBox getSillyRatDialog(String text, Image img) {
         var db = new DialogBox(text, img);
         db.flip();
