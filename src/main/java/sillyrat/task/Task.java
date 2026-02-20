@@ -7,6 +7,10 @@ import sillyrat.common.DateTimeUtil;
  * This class serves as a base class for other task types.
  */
 public class Task {
+    protected static final String FIELD_SEPARATOR = "\t";
+    protected static final String DONE_MARKER = "1";
+    protected static final String NOT_DONE_MARKER = "0";
+
     protected String description;
     protected boolean isDone;
 
@@ -50,33 +54,14 @@ public class Task {
      * @return The loaded task object.
      */
     public static Task toLoadTask(String line) {
-        String[] parts = line.split("\t");
+        String[] parts = line.split(FIELD_SEPARATOR);
         assert parts.length >= 2 : "Task line must have at least type and done status";
 
         String type = parts[0];
-        boolean done = parts[1].equals("1");
+        boolean done = parts[1].equals(DONE_MARKER);
         assert type.matches("[TDE ]") : "Task type must be T, D, E, or space";
 
-        Task task;
-        switch (type) {
-        case "T":
-            assert parts.length >= 3 : "Todo must have description";
-            task = new Todo(parts[2]);
-            break;
-        case "D":
-            assert parts.length >= 4 : "Deadline must have description and by date";
-            task = new Deadline(parts[2], DateTimeUtil.parseStorageDateTime(parts[3]));
-            break;
-        case "E":
-            assert parts.length >= 5 : "Event must have description, from and to dates";
-            task = new Event(parts[2],
-                    DateTimeUtil.parseStorageDateTime(parts[3]),
-                    DateTimeUtil.parseStorageDateTime(parts[4]));
-            break;
-        default:
-            task = new Task(parts.length > 2 ? parts[2] : "");
-            break;
-        }
+        Task task = createTaskFromParts(type, parts);
 
         if (done) {
             task.markDone();
@@ -85,12 +70,31 @@ public class Task {
         return task;
     }
 
+    private static Task createTaskFromParts(String type, String[] parts) {
+        switch (type) {
+        case "T":
+            assert parts.length >= 3 : "Todo must have description";
+            return new Todo(parts[2]);
+        case "D":
+            assert parts.length >= 4 : "Deadline must have description and by date";
+            return new Deadline(parts[2], DateTimeUtil.parseStorageDateTime(parts[3]));
+        case "E":
+            assert parts.length >= 5 : "Event must have description, from and to dates";
+            return new Event(parts[2],
+                    DateTimeUtil.parseStorageDateTime(parts[3]),
+                    DateTimeUtil.parseStorageDateTime(parts[4]));
+        default:
+            return new Task(parts.length > 2 ? parts[2] : "");
+        }
+    }
+
     public String getDescription() {
         return description;
     }
 
     public String toSaveString() {
-        return getTypeIcon() + "\t" + (isDone ? "1" : "0") + "\t" + description;
+        return getTypeIcon() + FIELD_SEPARATOR + (isDone ? DONE_MARKER : NOT_DONE_MARKER)
+                + FIELD_SEPARATOR + description;
     }
 
     @Override

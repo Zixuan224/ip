@@ -42,9 +42,10 @@ public class Event extends Task {
 
     @Override
     public String toSaveString() {
-        return "E\t" + (isDone ? "1" : "0") + "\t" + description + "\t"
-                + DateTimeUtil.toStorageString(from) + "\t"
-                + DateTimeUtil.toStorageString(to);
+        return "E" + FIELD_SEPARATOR + (isDone ? DONE_MARKER : NOT_DONE_MARKER)
+                + FIELD_SEPARATOR + description
+                + FIELD_SEPARATOR + DateTimeUtil.toStorageString(from)
+                + FIELD_SEPARATOR + DateTimeUtil.toStorageString(to);
     }
 
     @Override

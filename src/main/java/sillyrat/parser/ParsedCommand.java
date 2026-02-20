@@ -4,21 +4,21 @@ package sillyrat.parser;
  * Represents parsed command with associated arguments.
  */
 public class ParsedCommand {
-    private final String commandWord;
+    private final Command command;
     private final Object args;
 
     /**
      * Constructor.
-     * @param commandWord
-     * @param args
+     * @param command The command enum value.
+     * @param args The parsed arguments.
      */
-    public ParsedCommand(String commandWord, Object args) {
-        this.commandWord = commandWord;
+    public ParsedCommand(Command command, Object args) {
+        this.command = command;
         this.args = args;
     }
 
-    public String getCommandWord() {
-        return commandWord;
+    public Command getCommand() {
+        return command;
     }
 
     public Object getArgs() {

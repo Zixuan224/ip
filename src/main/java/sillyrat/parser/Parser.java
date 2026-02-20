@@ -27,38 +27,43 @@ public class Parser {
         String commandWord = parts[0];
         String rest = (parts.length > 1) ? parts[1].trim() : "";
 
-        switch (commandWord) {
-        case "list":
-            requireNoArgs(commandWord, rest);
-            return new ParsedCommand(commandWord, new NoArgs());
-
-        case "bye":
-            requireNoArgs(commandWord, rest);
-            return new ParsedCommand(commandWord, new NoArgs());
-
-        case "todo":
-            return new ParsedCommand(commandWord, parseTodoArgs(rest));
-
-        case "deadline":
-            return new ParsedCommand(commandWord, parseDeadlineArgs(rest));
-
-        case "event":
-            return new ParsedCommand(commandWord, parseEventArgs(rest));
-
-        case "mark":
-
-        case "unmark":
-
-        case "delete":
-            return new ParsedCommand(commandWord, parseIndexArgs(commandWord, rest));
-
-        case "find":
-            return new ParsedCommand(commandWord, parseFindArgs(rest));
-
-        default:
+        Command command;
+        try {
+            command = Command.fromString(commandWord);
+        } catch (IllegalArgumentException e) {
             throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                        + "todo, deadline, event, list, mark, unmark, delete, find, bye");
+                    + "todo, deadline, event, list, mark, unmark, delete, find, bye");
         }
+
+        switch (command) {
+        case LIST:
+            requireNoArgs(commandWord, rest);
+            return new ParsedCommand(command, new NoArgs());
+
+        case BYE:
+            requireNoArgs(commandWord, rest);
+            return new ParsedCommand(command, new NoArgs());
+
+        case TODO:
+            return new ParsedCommand(command, parseTodoArgs(rest));
+
+        case DEADLINE:
+            return new ParsedCommand(command, parseDeadlineArgs(rest));
+
+        case EVENT:
+            return new ParsedCommand(command, parseEventArgs(rest));
+
+        case MARK:
+        case UNMARK:
+        case DELETE:
+            return new ParsedCommand(command, parseIndexArgs(commandWord, rest));
+
+        case FIND:
+            return new ParsedCommand(command, parseFindArgs(rest));
+        }
+
+        throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
+                + "todo, deadline, event, list, mark, unmark, delete, find, bye");
     }
 
     private void requireNoArgs(String commandWord, String rest) throws SillyRatException {

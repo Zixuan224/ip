@@ -33,8 +33,9 @@ public class Deadline extends Task {
 
     @Override
     public String toSaveString() {
-        return "D\t" + (isDone ? "1" : "0") + "\t" + description + "\t"
-                + DateTimeUtil.toStorageString(by);
+        return "D" + FIELD_SEPARATOR + (isDone ? DONE_MARKER : NOT_DONE_MARKER)
+                + FIELD_SEPARATOR + description
+                + FIELD_SEPARATOR + DateTimeUtil.toStorageString(by);
     }
 
     @Override
