@@ -60,10 +60,14 @@ public class Parser {
 
         case FIND:
             return new ParsedCommand(command, parseFindArgs(rest));
+
+        case REMIND:
+            requireNoArgs(commandWord, rest);
+            return new ParsedCommand(command, new NoArgs());
         }
 
         throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                + "todo, deadline, event, list, mark, unmark, delete, find, bye");
+                + "todo, deadline, event, list, mark, unmark, delete, find, remind, bye");
     }
 
     private void requireNoArgs(String commandWord, String rest) throws SillyRatException {
@@ -81,12 +85,12 @@ public class Parser {
 
     private DeadlineArgs parseDeadlineArgs(String rest) throws SillyRatException {
         if (rest.isEmpty()) {
-            throw new SillyRatException("Deadline needs details. Example: deadline submit report /by Sunday");
+            throw new SillyRatException("Deadline needs details. Example: deadline submit report /by 2026-05-05 16:00");
         }
 
         String[] split = rest.split(" /by ", 2);
         if (split.length < 2) {
-            throw new SillyRatException("Deadline format: deadline <task> /by <when>");
+            throw new SillyRatException("Deadline format: deadline <task> /by yyyy-MM-dd HH:mm");
         }
 
         String desc = split[0].trim();
@@ -94,10 +98,10 @@ public class Parser {
 
         if (desc.isEmpty()) {
             throw new SillyRatException(
-                    "Deadline description cannot be empty. Example: deadline return book /by Sunday");
+                    "Deadline description cannot be empty.Example: deadline return book /by 2026-05-05 16:00");
         }
         if (byRaw.isEmpty()) {
-            throw new SillyRatException("Deadline time cannot be empty. Example: deadline return book /by Sunday");
+            throw new SillyRatException("Deadline time cannot be empty. Example: deadline return book /by 2026-05-05 16:00");
         }
 
         return new DeadlineArgs(desc, byRaw);

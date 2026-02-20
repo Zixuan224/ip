@@ -4,7 +4,7 @@ package sillyrat.parser;
  * Enumerates all recognised commands.
  */
 public enum Command {
-    LIST, BYE, TODO, DEADLINE, EVENT, MARK, UNMARK, DELETE, FIND;
+    LIST, BYE, TODO, DEADLINE, EVENT, MARK, UNMARK, DELETE, FIND, REMIND;
 
     /**
      * Converts a command word string to a Command enum value.

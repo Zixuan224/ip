@@ -1,5 +1,6 @@
 package sillyrat.task;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,5 +58,33 @@ public class TaskList {
         return tasks.stream()
                 .filter(task -> task.getDescription().contains(keywords))
                 .toList();
+    }
+
+    /**
+     * Returns undone deadlines and events that are due/starting within the given number of days.
+     *
+     * @param days The number of days ahead to look for upcoming tasks.
+     * @return A list of upcoming tasks sorted naturally by list order.
+     */
+    public List<Task> getUpcoming(int days) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime cutoff = now.plusDays(days);
+
+        return tasks.stream()
+                .filter(task -> !task.isDone())
+                .filter(task -> isUpcoming(task, now, cutoff))
+                .toList();
+    }
+
+    private static boolean isUpcoming(Task task, LocalDateTime now, LocalDateTime cutoff) {
+        if (task instanceof Deadline) {
+            LocalDateTime by = ((Deadline) task).getBy();
+            return !by.isBefore(now) && !by.isAfter(cutoff);
+        }
+        if (task instanceof Event) {
+            LocalDateTime from = ((Event) task).getFrom();
+            return !from.isBefore(now) && !from.isAfter(cutoff);
+        }
+        return false;
     }
 }

@@ -110,9 +110,12 @@ public class SillyRat {
         case FIND:
             return replyFind((FindArgs) parsed.getArgs());
 
+        case REMIND:
+            return replyRemind();
+
         default:
             throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                    + "todo, deadline, event, list, mark, unmark, delete, find, bye");
+                    + "todo, deadline, event, list, mark, unmark, delete, find, remind, bye");
         }
     }
 
@@ -227,6 +230,24 @@ public class SillyRat {
         StringBuilder sb = new StringBuilder("Here are the matching tasks in your list:\n");
         for (int i = 0; i < found.size(); i++) {
             sb.append(i + 1).append(". ").append(found.get(i)).append("\n");
+        }
+        return sb.toString().trim();
+    }
+
+    private static final int REMINDER_DAYS = 7;
+
+    private String replyRemind() {
+        List<Task> upcoming = tasks.getUpcoming(REMINDER_DAYS);
+
+        if (upcoming.isEmpty()) {
+            return "No upcoming deadlines or events in the next "
+                    + REMINDER_DAYS + " days. Relax, Master!";
+        }
+
+        StringBuilder sb = new StringBuilder("Squeak! These tasks are due in the next "
+                + REMINDER_DAYS + " days:\n");
+        for (int i = 0; i < upcoming.size(); i++) {
+            sb.append(i + 1).append(". ").append(upcoming.get(i)).append("\n");
         }
         return sb.toString().trim();
     }
