@@ -48,7 +48,7 @@ public class SillyRat {
         try {
             ParsedCommand parsed = PARSER.parse(input);
             assert parsed != null : "Parser should never return null";
-            assert parsed.getCommandWord() != null : "Command word should never be null";
+            assert parsed.getCommand() != null : "Command word should never be null";
             return executeCommand(parsed);
         } catch (SillyRatException e) {
             return e.getMessage();
