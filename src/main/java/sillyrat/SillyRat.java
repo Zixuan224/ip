@@ -44,8 +44,13 @@ public class SillyRat {
     }
 
     public String getResponse(String input) {
+        assert input != null : "Input should not be null";
+        
         try {
             ParsedCommand parsed = PARSER.parse(input);
+            assert parsed != null : "Parser should never return null";
+            assert parsed.getCommandWord() != null : "Command word should never be null";
+            
             String command = parsed.getCommandWord();
 
             switch (command) {

@@ -19,7 +19,11 @@ public class Parser {
         }
 
         String trimmed = input.trim();
+        assert !trimmed.isEmpty() : "Trimmed input should not be empty after validation";
+        
         String[] parts = trimmed.split(" ", 2);
+        assert parts.length >= 1 : "Split should always produce at least one element";
+        
         String commandWord = parts[0];
         String rest = (parts.length > 1) ? parts[1].trim() : "";
 
