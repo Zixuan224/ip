@@ -47,7 +47,7 @@ public class SillyRat {
         TaskList loaded;
         try {
             loaded = new TaskList(storage.load());
-        } catch (IOException e) {
+        } catch (Exception e) {
             loaded = new TaskList();
         }
         this.tasks = loaded;

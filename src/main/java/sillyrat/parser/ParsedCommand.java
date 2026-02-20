@@ -24,4 +24,8 @@ public class ParsedCommand {
     public Object getArgs() {
         return args;
     }
+
+    public String getCommandWord() {
+        return command.name().toLowerCase();
+    }
 }

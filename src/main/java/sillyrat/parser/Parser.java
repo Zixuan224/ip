@@ -21,10 +21,10 @@ public class Parser {
 
         String trimmed = input.trim();
         assert !trimmed.isEmpty() : "Trimmed input should not be empty after validation";
-        
+
         String[] parts = trimmed.split(" ", 2);
         assert parts.length >= 1 : "Split should always produce at least one element";
-        
+
         String commandWord = parts[0];
         String rest = (parts.length > 1) ? parts[1].trim() : "";
 
@@ -33,15 +33,13 @@ public class Parser {
             command = Command.fromString(commandWord);
         } catch (IllegalArgumentException e) {
             throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                    + "todo, deadline, event, list, mark, unmark, delete, find, bye");
+                    + "todo, deadline, event, list, mark, unmark, delete, find, remind, bye");
         }
 
         switch (command) {
         case LIST:
-            requireNoArgs(commandWord, rest);
-            return new ParsedCommand(command, new NoArgs());
-
         case BYE:
+        case REMIND:
             requireNoArgs(commandWord, rest);
             return new ParsedCommand(command, new NoArgs());
 
@@ -62,13 +60,10 @@ public class Parser {
         case FIND:
             return new ParsedCommand(command, parseFindArgs(rest));
 
-        case REMIND:
-            requireNoArgs(commandWord, rest);
-            return new ParsedCommand(command, new NoArgs());
+        default:
+            throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
+                        + "todo, deadline, event, list, mark, unmark, delete, find, remind, bye");
         }
-
-        throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                + "todo, deadline, event, list, mark, unmark, delete, find, remind, bye");
     }
 
     private void requireNoArgs(String commandWord, String rest) throws SillyRatException {
@@ -99,10 +94,12 @@ public class Parser {
 
         if (desc.isEmpty()) {
             throw new SillyRatException(
-                    "Deadline description cannot be empty.Example: deadline return book /by 2026-05-05 16:00");
+                    "Deadline description cannot be empty. "
+                            + "Example: deadline return book /by 2026-05-05 16:00");
         }
         if (byRaw.isEmpty()) {
-            throw new SillyRatException("Deadline time cannot be empty. Example: deadline return book /by 2026-05-05 16:00");
+            throw new SillyRatException("Deadline time cannot be empty. "
+                    + "Example: deadline return book /by 2026-05-05 16:00");
         }
 
         return new DeadlineArgs(desc, byRaw);
