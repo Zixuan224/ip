@@ -156,8 +156,12 @@ public class SillyRat {
             return replyRemind();
 
         default:
-            throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                    + "todo, deadline, event, list, mark, unmark, delete, find, remind, bye");
+            throw new SillyRatException("I don't understand Meowese, Master. "
+                    + "\n\nTalk in Squeakese:"
+                    + "\n• New task: todo, deadline, event"
+                    + "\n• Manage: list, mark, unmark, delete"
+                    + "\n• Search: find"
+                    + "\n• Reminders: remind");
         }
     }
 

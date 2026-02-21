@@ -57,9 +57,12 @@ public class Task {
         String[] parts = line.split(FIELD_SEPARATOR);
         assert parts.length >= 2 : "Task line must have at least type and done status";
 
-        String type = parts[0];
+        String rawType = parts[0];
         boolean done = parts[1].equals(DONE_MARKER);
-        assert type.matches("[TDE ]") : "Task type must be T, D, E, or space";
+
+        // Unknown types should fall back to a plain Task (type icon = space),
+        // as expected by tests and to be resilient to corrupted/older save files.
+        String type = rawType != null && rawType.matches("[TDE ]") ? rawType : " ";
 
         Task task = createTaskFromParts(type, parts);
 
