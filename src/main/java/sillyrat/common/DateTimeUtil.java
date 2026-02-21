@@ -21,7 +21,6 @@ public class DateTimeUtil {
 
     private static final DateTimeFormatter[] USER_DATE_TIME_FORMATS = {
             DateTimeFormatter.ofPattern("d/M/uuuu HHmm"),
-            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"),
             DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm")
     };
 
@@ -61,7 +60,7 @@ public class DateTimeUtil {
                 "Invalid date/time format.\n"
                         + "Accepted formats:\n"
                         + "  - yyyy-MM-dd (e.g., 2019-10-15)\n"
-                        + "  - yyyy-MM-dd HH:mm (e.g., 2019-10-15 18:00)\n"
+                        + "  - yyyy-MM-dd HHmm (e.g., 2019-10-15 1800)\n"
                         + "  - d/M/yyyy HHmm (e.g., 2/12/2019 1800 means 2 Dec 2019 18:00)"
         );
     }

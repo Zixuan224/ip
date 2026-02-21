@@ -32,8 +32,12 @@ public class Parser {
         try {
             command = Command.fromString(commandWord);
         } catch (IllegalArgumentException e) {
-            throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                    + "todo, deadline, event, list, mark, unmark, delete, find, remind, bye");
+            throw new SillyRatException("I don't understand Meowese, Master. "
+                    + "\n\nTalk in Squeakese:"
+                    + "\n• New task: todo, deadline, event"
+                    + "\n• Manage: list, mark, unmark, delete"
+                    + "\n• Search: find"
+                    + "\n• Reminders: remind");
         }
 
         switch (command) {
@@ -61,8 +65,12 @@ public class Parser {
             return new ParsedCommand(command, parseFindArgs(rest));
 
         default:
-            throw new SillyRatException("I don't understand human language, Master. Speak in Ratinese: "
-                        + "todo, deadline, event, list, mark, unmark, delete, find, remind, bye");
+            throw new SillyRatException("I don't understand Meowese, Master. "
+                    + "\n\nTalk in Squeakese:"
+                    + "\n• New task: todo, deadline, event"
+                    + "\n• Manage: list, mark, unmark, delete"
+                    + "\n• Search: find"
+                    + "\n• Reminders: remind");
         }
     }
 
@@ -71,7 +79,6 @@ public class Parser {
             throw new SillyRatException(commandWord + " does not take any extra words.");
         }
     }
-
     private TodoArgs parseTodoArgs(String rest) throws SillyRatException {
         if (rest.isEmpty()) {
             throw new SillyRatException("Todo needs a description. Example: todo borrow cheese");
@@ -81,12 +88,12 @@ public class Parser {
 
     private DeadlineArgs parseDeadlineArgs(String rest) throws SillyRatException {
         if (rest.isEmpty()) {
-            throw new SillyRatException("Deadline needs details. Example: deadline submit report /by 2026-05-05 16:00");
+            throw new SillyRatException("Deadline needs details. Example: deadline submit report /by 2026-05-05 1600");
         }
 
         String[] split = rest.split(" /by ", 2);
         if (split.length < 2) {
-            throw new SillyRatException("Deadline format: deadline <task> /by yyyy-MM-dd HH:mm");
+            throw new SillyRatException("Deadline format: deadline <task> /by yyyy-MM-dd HHmm");
         }
 
         String desc = split[0].trim();
@@ -95,11 +102,11 @@ public class Parser {
         if (desc.isEmpty()) {
             throw new SillyRatException(
                     "Deadline description cannot be empty. "
-                            + "Example: deadline return book /by 2026-05-05 16:00");
+                            + "Example: deadline return book /by 2026-05-05 1600");
         }
         if (byRaw.isEmpty()) {
             throw new SillyRatException("Deadline time cannot be empty. "
-                    + "Example: deadline return book /by 2026-05-05 16:00");
+                    + "Example: deadline return book /by 2026-05-05 1600");
         }
 
         return new DeadlineArgs(desc, byRaw);
@@ -108,12 +115,12 @@ public class Parser {
     private EventArgs parseEventArgs(String rest) throws SillyRatException {
         if (rest.isEmpty()) {
             throw new SillyRatException("Event needs details."
-                    + " Example: event meeting /from 2026-05-05 14:00 /to 2026-05-05 16:00");
+                    + " Example: event meeting /from 2026-05-05 1400 /to 2026-05-05 1600");
         }
 
         String[] fromSplit = rest.split(" /from ", 2);
         if (fromSplit.length < 2) {
-            throw new SillyRatException("Event format: event <task> /from yyyy-MM-dd HH:mm /to yyyy-MM-dd HH:mm");
+            throw new SillyRatException("Event format: event <task> /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm");
         }
 
         String desc = fromSplit[0].trim();
@@ -121,7 +128,7 @@ public class Parser {
 
         String[] toSplit = afterFrom.split(" /to ", 2);
         if (toSplit.length < 2) {
-            throw new SillyRatException("Event format: event <task> /from yyyy-MM-dd HH:mm /to yyyy-MM-dd HH:mm");
+            throw new SillyRatException("Event format: event <task> /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm");
         }
 
         String fromRaw = toSplit[0].trim();

@@ -1,5 +1,8 @@
 package sillyrat.ui;
 
+import java.util.Objects;
+
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -8,6 +11,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import sillyrat.SillyRat;
 
 /**
@@ -26,8 +30,10 @@ public class MainWindow extends AnchorPane {
 
     private SillyRat sillyRat;
 
-    private Image userImage = new Image(this.getClass().getResourceAsStream("/images/CatBoss.png"));
-    private Image ratImage = new Image(this.getClass().getResourceAsStream("/images/SillyRat.png"));
+    private final Image userImage = new Image(Objects.requireNonNull(this.getClass()
+            .getResourceAsStream("/images/CatBoss.png")));
+    private final Image ratImage = new Image(Objects.requireNonNull(this.getClass()
+            .getResourceAsStream("/images/SillyRat.png")));
 
     @FXML
     public void initialize() {
@@ -70,8 +76,12 @@ public class MainWindow extends AnchorPane {
         );
         userInput.clear();
 
-        if (input.trim().equals("bye")) {
-            Platform.exit();
+        if (input.trim().equalsIgnoreCase("bye")) {
+            userInput.setDisable(true);
+            sendButton.setDisable(true);
+            PauseTransition delay = new PauseTransition(Duration.seconds(2.5));
+            delay.setOnFinished(event -> Platform.exit());
+            delay.play();
         }
     }
 }

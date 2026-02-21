@@ -68,14 +68,22 @@ public class SillyRat {
      * @return The greeting and reminder message.
      */
     public String getStartupReminder() {
-        String greeting = "Hello Master! SillyRat at your service!";
+        String greeting = "Hello Master! Silly Rat at your service!";
+        String guide = "\n\nHere's what I can do:"
+                + "\n• New task: todo, deadline, event"
+                + "\n• Manage: list, mark, unmark, delete"
+                + "\n• Search: find"
+                + "\n• Reminders: remind"
+                + "\n• Exit: bye";
+
         List<Task> upcoming = tasks.getUpcoming(REMINDER_DAYS);
 
         if (upcoming.isEmpty()) {
-            return greeting + "\nNo upcoming deadlines or events. Relax!";
+            return greeting + guide + "\n\nNo upcoming deadlines or events. Chill ya.";
         }
 
         StringBuilder sb = new StringBuilder(greeting);
+        sb.append(guide);
         sb.append("\n\nSqueak! Reminder — these tasks are due in the next ")
                 .append(REMINDER_DAYS).append(" days:\n");
         for (int i = 0; i < upcoming.size(); i++) {
@@ -208,9 +216,9 @@ public class SillyRat {
      */
     private String replyList() {
         if (tasks.isEmpty()) {
-            return "Your list is empty. Feed me tasks with todo/deadline/event.";
+            return "Nothing on the list now! Feed me tasks with todo/deadline/event.";
         }
-        StringBuilder sb = new StringBuilder("Here are the tasks in your list:\n");
+        StringBuilder sb = new StringBuilder("Here are your boss plans:\n");
         for (int i = 0; i < tasks.size(); i++) {
             sb.append(i + 1).append(". ").append(tasks.get(i)).append("\n");
         }
