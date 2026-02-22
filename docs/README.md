@@ -2,14 +2,15 @@
 
 <img width="413" height="629" alt="1-129eaec6" src="https://github.com/user-attachments/assets/9fcd6af0-5c7c-485b-be60-339d00a389cf" />
 
+---
 
 **SillyRat** is your loyal (if slightly cheese-obsessed) task management chatbot. 🐀
 
 Need to keep track of todos, deadlines, and events? SillyRat scurries through your task list so you don't have to. It remembers everything, saves your tasks automatically, and even reminds you about upcoming deadlines when you launch the app.
 
 SillyRat features:
-- ⚡ **Lightning-fast CLI-style commands** with a friendly GUI
 - 📋 **Three task types**: Todos, Deadlines, and Events
+- ✅ **Mark/unmark** tasks as done
 - 🔍 **Search** across all your tasks
 - 🔔 **Automatic reminders** for tasks due in the next 7 days
 - 💾 **Persistent storage** — your tasks survive between sessions
@@ -18,7 +19,7 @@ SillyRat features:
 
 ## Quick Start
 
-1. Ensure you have **Java 17** or above installed.
+1. Ensure you have **Java 17** installed.
 2. Download the latest `sillyrat.jar` from the releases.
 3. Run `java -jar sillyrat.jar`.
 4. Start typing commands — SillyRat is ready to serve!
@@ -55,21 +56,21 @@ Now you have 5 tasks in the list.
 
 Adds a task that needs to be completed before a specific date and time.
 
-Format: `event DESCRIPTION /from YYYY-MM-DD HHmm /to HHmm`
+Format: `event DESCRIPTION /from YYYY-MM-DD HHmm /to YYYY-MM-DD HHmm`
 
-Example: `deadline return book /by 2026-03-15 1800`
+Example: `event group meeting /from 2026-05-05 1800 /to 2026-05-05 1900`
 
-A new deadline task is added to your list with the specified due date.
+A new event task is added to your list with the specified time period.
 
 ```
 Got it. I've added this task:
-  [D][ ] return book (by: Mar 15 2026 1800)
+  [E][ ] group meeting (from: May 05 2026 18:00 to: May 05 2026 19:00)
 Now you have 5 tasks in the list.
 ```
 
 ## Searching tasks
 
-Adds a task that needs to be completed before a specific date and time.
+Search for tasks that you have added with keyword.
 
 Format: `find KEYWORD`
 
@@ -93,24 +94,10 @@ Example: `list`
 SillyRat provides a numbered list of all your current tasks.
 
 ```
-Here are the tasks in your list:
+Here are your boss plans:
 1.[T][X] borrow cheese from library
 2.[D][ ] return book (by: Mar 15 2026 18:00)
 3.[E][ ] project meeting (from: Feb 25 2026 14:00 to: 16:00)
-```
-
-## Marking a task as done
-
-Marks a specific task as completed by its index number.
-
-Format: `mark INDEX`
-
-Example: `mark 2`
-
-The status of the task at the specified index is updated to "Done", indicated by an [X].
-```
-Nice! I've marked this task as done:
-  [D][X] return book (by: Mar 15 2026 18:00)
 ```
 
 ## Marking a task as done
