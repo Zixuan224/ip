@@ -59,9 +59,9 @@ public class DateTimeUtil {
         throw new IllegalArgumentException(
                 "Invalid date/time format.\n"
                         + "Accepted formats:\n"
-                        + "  - yyyy-MM-dd (e.g., 2019-10-15)\n"
-                        + "  - yyyy-MM-dd HHmm (e.g., 2019-10-15 1800)\n"
-                        + "  - d/M/yyyy HHmm (e.g., 2/12/2019 1800 means 2 Dec 2019 18:00)"
+                        + "  - YYYY-MM-DD (e.g., 2019-10-15)\n"
+                        + "  - YYYY-MM-DD HHmm (e.g., 2019-10-15 1800)\n"
+                        + "  - D/M/YYYY HHmm (e.g., 2/12/2019 1800 means 2 Dec 2019 18:00)"
         );
     }
 
