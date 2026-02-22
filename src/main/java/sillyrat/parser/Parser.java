@@ -93,7 +93,7 @@ public class Parser {
 
         String[] split = rest.split(" /by ", 2);
         if (split.length < 2) {
-            throw new SillyRatException("Deadline format: deadline <task> /by yyyy-MM-dd HHmm");
+            throw new SillyRatException("Deadline format: deadline <task> /by YYYY-MM-DD HHmm");
         }
 
         String desc = split[0].trim();
@@ -120,7 +120,7 @@ public class Parser {
 
         String[] fromSplit = rest.split(" /from ", 2);
         if (fromSplit.length < 2) {
-            throw new SillyRatException("Event format: event <task> /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm");
+            throw new SillyRatException("Event format: event <task> /from YYYY-MM-DD HHmm /to YYYY-MM-DD HHmm");
         }
 
         String desc = fromSplit[0].trim();
@@ -128,7 +128,7 @@ public class Parser {
 
         String[] toSplit = afterFrom.split(" /to ", 2);
         if (toSplit.length < 2) {
-            throw new SillyRatException("Event format: event <task> /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm");
+            throw new SillyRatException("Event format: event <task> /from YYYY-MM-DD HHmm /to YYYY-MM-DD HHmm");
         }
 
         String fromRaw = toSplit[0].trim();
