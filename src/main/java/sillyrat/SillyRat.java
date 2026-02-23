@@ -222,7 +222,7 @@ public class SillyRat {
         if (tasks.isEmpty()) {
             return "Nothing on the list now! Feed me tasks with todo/deadline/event.";
         }
-        StringBuilder sb = new StringBuilder("Here are your boss plans:\n");
+        StringBuilder sb = new StringBuilder("Here are your master plans:\n");
         for (int i = 0; i < tasks.size(); i++) {
             sb.append(i + 1).append(". ").append(tasks.get(i)).append("\n");
         }
