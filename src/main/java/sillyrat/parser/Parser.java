@@ -74,12 +74,19 @@ public class Parser {
         }
     }
 
+    private void rejectPipe(String input) throws SillyRatException {
+        if (input.contains("|")) {
+            throw new SillyRatException("Please don't use '|' in task input — I can't handle that.");
+        }
+    }
+
     private void requireNoArgs(String commandWord, String rest) throws SillyRatException {
         if (rest != null && !rest.isBlank()) {
             throw new SillyRatException(commandWord + " does not take any extra words.");
         }
     }
     private TodoArgs parseTodoArgs(String rest) throws SillyRatException {
+        rejectPipe(rest);
         if (rest.isEmpty()) {
             throw new SillyRatException("Todo needs a description. Example: todo borrow cheese");
         }
@@ -87,6 +94,7 @@ public class Parser {
     }
 
     private DeadlineArgs parseDeadlineArgs(String rest) throws SillyRatException {
+        rejectPipe(rest);
         if (rest.isEmpty()) {
             throw new SillyRatException("Deadline needs details. Example: deadline submit report /by 2026-05-05 1600");
         }
@@ -113,6 +121,7 @@ public class Parser {
     }
 
     private EventArgs parseEventArgs(String rest) throws SillyRatException {
+        rejectPipe(rest);
         if (rest.isEmpty()) {
             throw new SillyRatException("Event needs details."
                     + " Example: event meeting /from 2026-05-05 1400 /to 2026-05-05 1600");
