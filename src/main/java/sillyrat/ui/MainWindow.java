@@ -38,6 +38,10 @@ public class MainWindow extends AnchorPane {
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+
+        scrollPane.setFitToWidth(true);
+
+        dialogContainer.prefWidthProperty().bind(scrollPane.widthProperty().subtract(20));
     }
 
     /**
@@ -74,10 +78,14 @@ public class MainWindow extends AnchorPane {
         }
 
         String response = sillyRat.getResponse(input);
-        dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(input, userImage),
-                DialogBox.getSillyRatDialog(response, ratImage)
-        );
+
+        DialogBox userDb = DialogBox.getUserDialog(input, userImage);
+        DialogBox ratDb = DialogBox.getSillyRatDialog(response, ratImage);
+
+        userDb.prefWidthProperty().bind(dialogContainer.widthProperty());
+        ratDb.prefWidthProperty().bind(dialogContainer.widthProperty());
+
+        dialogContainer.getChildren().addAll(userDb, ratDb);
         userInput.clear();
 
         if (input.equalsIgnoreCase("bye")) {

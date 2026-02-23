@@ -23,6 +23,10 @@ public class Main extends Application {
             Scene scene = new Scene(ap);
             stage.setScene(scene);
             stage.setTitle("Silly Rat");
+
+            stage.setMinWidth(400);
+            stage.setMinHeight(600);
+
             fxmlLoader.<MainWindow>getController().setSillyRat(sillyRat);
             stage.show();
         } catch (IOException e) {

@@ -1,6 +1,6 @@
 # SillyRat User Guide
 
-<img width="413" height="829" alt="image" src="https://github.com/user-attachments/assets/05fd524e-50e4-4106-a240-2c90ae8836a2" />
+<img width="413" height="652" alt="image" src="https://github.com/user-attachments/assets/05fd524e-50e4-4106-a240-2c90ae8836a2" />
 
 ---
 
