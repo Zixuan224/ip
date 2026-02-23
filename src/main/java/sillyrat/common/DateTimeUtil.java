@@ -1,10 +1,10 @@
 package sillyrat.common;
 
+import java.text.ParsePosition;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 /**
  * Utility class for parsing and formatting date/time strings.
@@ -42,17 +42,20 @@ public class DateTimeUtil {
         String s = raw.trim();
 
         for (DateTimeFormatter f : USER_DATE_TIME_FORMATS) {
-            try {
+            ParsePosition pp = new ParsePosition(0);
+            f.parseUnresolved(s, pp); // Check if it matches the pattern
+
+            if (pp.getErrorIndex() == -1 && pp.getIndex() == s.length()) {
                 return LocalDateTime.parse(s, f);
-            } catch (DateTimeParseException ignored) {
             }
         }
 
         for (DateTimeFormatter f : USER_DATE_ONLY_FORMATS) {
-            try {
-                LocalDate d = LocalDate.parse(s, f);
-                return d.atStartOfDay();
-            } catch (DateTimeParseException ignored) {
+            ParsePosition pp = new ParsePosition(0);
+            f.parseUnresolved(s, pp);
+
+            if (pp.getErrorIndex() == -1 && pp.getIndex() == s.length()) {
+                return LocalDate.parse(s, f).atStartOfDay();
             }
         }
 
