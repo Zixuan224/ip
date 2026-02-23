@@ -68,7 +68,11 @@ public class MainWindow extends AnchorPane {
      */
     @FXML
     private void handleUserInput() {
-        String input = userInput.getText();
+        String input = userInput.getText().trim();
+        if (input.isEmpty()) {
+            return;
+        }
+
         String response = sillyRat.getResponse(input);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
@@ -76,12 +80,16 @@ public class MainWindow extends AnchorPane {
         );
         userInput.clear();
 
-        if (input.trim().equalsIgnoreCase("bye")) {
-            userInput.setDisable(true);
-            sendButton.setDisable(true);
-            PauseTransition delay = new PauseTransition(Duration.seconds(2.5));
-            delay.setOnFinished(event -> Platform.exit());
-            delay.play();
+        if (input.equalsIgnoreCase("bye")) {
+            shutdown();
         }
+    }
+
+    private void shutdown() {
+        userInput.setDisable(true);
+        sendButton.setDisable(true);
+        PauseTransition delay = new PauseTransition(Duration.seconds(2.5));
+        delay.setOnFinished(event -> Platform.exit());
+        delay.play();
     }
 }
