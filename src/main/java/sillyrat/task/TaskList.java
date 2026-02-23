@@ -29,11 +29,20 @@ public class TaskList {
         tasks = new ArrayList<>(initialTasks);
     }
 
+    /**
+     * Adds a task to the list.
+     * @param task The task to add.
+     */
     public void add(Task task) {
         assert task != null : "Cannot add null task to list";
         tasks.add(task);
     }
 
+    /**
+     * Removes the task at the given index.
+     * @param index The index of the task to remove.
+     * @return The removed task.
+     */
     public Task remove(int index) {
         assert index >= 0 && index < tasks.size() : "Index must be within valid range";
         return tasks.remove(index);
