@@ -1,10 +1,11 @@
 package sillyrat.common;
 
-import java.text.ParsePosition;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
+import java.util.Locale;
 
 /**
  * Utility class for parsing and formatting date/time strings.
@@ -20,12 +21,15 @@ public class DateTimeUtil {
             DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private static final DateTimeFormatter[] USER_DATE_TIME_FORMATS = {
-            DateTimeFormatter.ofPattern("d/M/uuuu HHmm"),
-            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm")
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT)
     };
 
     private static final DateTimeFormatter[] USER_DATE_ONLY_FORMATS = {
-            DateTimeFormatter.ofPattern("uuuu-MM-dd")
+            DateTimeFormatter.ofPattern("uuuu-MM-dd", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT)
     };
 
     private DateTimeUtil() {
@@ -42,20 +46,26 @@ public class DateTimeUtil {
         String s = raw.trim();
 
         for (DateTimeFormatter f : USER_DATE_TIME_FORMATS) {
-            ParsePosition pp = new ParsePosition(0);
-            f.parseUnresolved(s, pp); // Check if it matches the pattern
+            try {
+                LocalDateTime dt = LocalDateTime.parse(s, f);
 
-            if (pp.getErrorIndex() == -1 && pp.getIndex() == s.length()) {
-                return LocalDateTime.parse(s, f);
+                if (dt.isBefore(LocalDateTime.now())) {
+                    throw new IllegalArgumentException("Date/time cannot be in the past.");
+                }
+                return dt;
+            } catch (Exception ignored) {
             }
         }
 
         for (DateTimeFormatter f : USER_DATE_ONLY_FORMATS) {
-            ParsePosition pp = new ParsePosition(0);
-            f.parseUnresolved(s, pp);
+            try {
+                LocalDate d = LocalDate.parse(s, f);
 
-            if (pp.getErrorIndex() == -1 && pp.getIndex() == s.length()) {
-                return LocalDate.parse(s, f).atStartOfDay();
+                if (d.isBefore(LocalDate.now())) {
+                    throw new IllegalArgumentException("Date cannot be before today.");
+                }
+                return d.atStartOfDay();
+            } catch (Exception ignored) {
             }
         }
 
@@ -64,7 +74,8 @@ public class DateTimeUtil {
                         + "Accepted formats:\n"
                         + "  - YYYY-MM-DD (e.g., 2019-10-15)\n"
                         + "  - YYYY-MM-DD HHmm (e.g., 2019-10-15 1800)\n"
-                        + "  - D/M/YYYY HHmm (e.g., 2/12/2019 1800 means 2 Dec 2019 18:00)"
+                        + "  - D/M/YYYY HHmm (e.g., 2/12/2019 1800 means 2 Dec 2019 18:00)\n"
+                        + "Also: dates/times must not be in the past."
         );
     }
 
